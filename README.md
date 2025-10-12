@@ -12,30 +12,35 @@
 - **多語言支援**: 支援中文、英文、德文分析
 - **隱私保護**: 不保存任何個人資料
 
-## 🚀 快速開始
+## 🚀 使用方式
 
-### 1. 安裝依賴
+### 方式 1: 直接使用（推薦）
+直接訪問部署的應用，無需任何設置：
+- 訪問：[部署後的 Streamlit Cloud URL]
+- 貼上履歷和職缺描述
+- 立即獲得 AI 分析結果
 
+### 方式 2: 本地運行
+如果你想在本地運行：
+
+#### 1. 安裝依賴
 ```bash
 pip install -r requirements.txt
 ```
 
-### 2. 設置 API Key
-
+#### 2. 設置 API Key
 1. 到 [Groq Console](https://console.groq.com/) 申請免費 API key
 2. 創建 `.env` 文件並設置：
-
 ```
 GROQ_API_KEY=your_groq_api_key_here
 ```
 
-### 3. 運行應用
-
+#### 3. 運行應用
 ```bash
 streamlit run app.py
 ```
 
-## 📱 使用方式
+## 📱 操作步驟
 
 1. 在左側貼上你的履歷內容
 2. 在右側貼上職缺描述
