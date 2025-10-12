@@ -648,15 +648,40 @@ if __name__ == "__main__":
     # 添加 JavaScript 來處理語言偵測和 sidebar 隱藏
     st.markdown("""
     <script>
-    // 頁面加載完成後執行
-    window.addEventListener('load', function() {
-        // 隱藏 sidebar
-        setTimeout(function() {
-            const sidebar = document.querySelector('[data-testid="stSidebar"]');
+    // 立即執行和延遲執行結合
+    function hideSidebar() {
+        // 嘗試多種選擇器
+        const selectors = [
+            '[data-testid="stSidebar"]',
+            '.css-1d391kg',
+            '.stSidebar',
+            'section[data-testid="stSidebar"]'
+        ];
+        
+        for (const selector of selectors) {
+            const sidebar = document.querySelector(selector);
             if (sidebar) {
                 sidebar.style.display = 'none';
+                sidebar.style.visibility = 'hidden';
+                sidebar.style.opacity = '0';
+                sidebar.style.width = '0';
+                sidebar.style.minWidth = '0';
+                break;
             }
-        }, 100);
+        }
+    }
+    
+    // 立即執行
+    hideSidebar();
+    
+    // 頁面加載完成後執行
+    window.addEventListener('load', function() {
+        hideSidebar();
+        
+        // 多次嘗試隱藏
+        setTimeout(hideSidebar, 100);
+        setTimeout(hideSidebar, 500);
+        setTimeout(hideSidebar, 1000);
         
         // 語言偵測和設置
         setTimeout(function() {
@@ -672,6 +697,12 @@ if __name__ == "__main__":
                 }
             }
         }, 500);
+    });
+    
+    // DOM 內容加載完成後也執行
+    document.addEventListener('DOMContentLoaded', function() {
+        hideSidebar();
+        setTimeout(hideSidebar, 100);
     });
     </script>
     """, unsafe_allow_html=True)
