@@ -284,7 +284,13 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
   "priorities": [{{"name":字串,"weight":0-1,"explanation":字串}}],
   "matched": [{{"item":字串,"evidence":[字串...]}}],
   "missing": [{{"item":字串,"action":字串}}],
-  "advice": {{"標題1": ["建議1", "建議2"], "標題2": ["建議3", "建議4"]}}
+  "advice": {{
+    "履歷優化": ["具體的履歷改進建議"],
+    "求職信建議": ["可直接複製的段落模板"],
+    "技能差距分析": ["缺少技能和學習方向"],
+    "面試準備建議": ["潛在問題和回答方向"],
+    "作品集建議": ["具體的專案題目和展示建議"]
+  }}
 }}
 
 重要規則：
@@ -293,7 +299,12 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 - priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣
 - matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當；不用寫「來自履歷」
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
-- advice：要列點、要有標題，格式為物件包含多個標題和對應的建議列表
+- advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
+  * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
+  * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板
+  * 技能差距分析：缺少技能、學習方向、免費資源/課程建議
+  * 面試準備建議：潛在問題、回答方向、STAR回答框架提示
+  * 作品集建議：小專案題目、展示建議
 - 僅回 JSON，不要其他文字
 
 特別注意：priorities 中的技能必須是職缺描述中明確提及或要求的技能，不能因為履歷中有相關經驗就加入職缺關鍵技能中！"""
@@ -360,26 +371,12 @@ def display_results(result, language="中文"):
     
     # 匹配度分數
     match_score = result.get('match_score', 0)
-    confidence = result.get('confidence', 0)
     match_explanation = result.get('match_explanation', '')
-    
-    # 計算信心指標
-    confidence_text = ""
-    if confidence >= 0.8:
-        confidence_text = "高信心度"
-        confidence_color = "#28a745"
-    elif confidence >= 0.6:
-        confidence_text = "中等信心度"
-        confidence_color = "#ffc107"
-    else:
-        confidence_text = "低信心度"
-        confidence_color = "#dc3545"
     
     st.markdown(f"""
     <div class="score-container">
         <h1 class="score-number">{match_score}%</h1>
         <p class="score-label">{texts['match_score_label']}</p>
-        <p style="font-size: 0.9rem; margin-top: 0.5rem; color: {confidence_color}; font-weight: 500;">{confidence_text}</p>
         <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.8;">{match_explanation}</p>
     </div>
     """, unsafe_allow_html=True)
@@ -470,17 +467,26 @@ def display_results(result, language="中文"):
         # 處理新格式（帶標題的物件）或舊格式
         if isinstance(advice_content, dict):
             advice_html = ""
-            colors = ['#dc3545', '#007bff', '#28a745', '#6f42c1', '#fd7e14']
-            color_index = 0
+            
+            # 定義每個類別的圖標和顏色
+            advice_config = {
+                "履歷優化": {"icon": "📌", "color": "#dc3545"},
+                "求職信建議": {"icon": "✉️", "color": "#007bff"},
+                "技能差距分析": {"icon": "🧭", "color": "#28a745"},
+                "面試準備建議": {"icon": "📈", "color": "#6f42c1"},
+                "作品集建議": {"icon": "🧩", "color": "#fd7e14"}
+            }
             
             for title, items in advice_content.items():
                 if items and len(items) > 0:
-                    color = colors[color_index % len(colors)]
-                    advice_html += f"<h4 style='color: {color}; margin-top: 1rem;'>{title}</h4><ul>"
+                    config = advice_config.get(title, {"icon": "💡", "color": "#666"})
+                    icon = config["icon"]
+                    color = config["color"]
+                    
+                    advice_html += f"<h4 style='color: {color}; margin-top: 1.5rem; margin-bottom: 0.5rem;'>{icon} {title}</h4><ul style='margin-bottom: 1rem;'>"
                     for item in items:
-                        advice_html += f"<li>{item}</li>"
+                        advice_html += f"<li style='margin: 0.3rem 0; line-height: 1.5;'>{item}</li>"
                     advice_html += "</ul>"
-                    color_index += 1
         elif isinstance(advice_content, str):
             # 字符串格式：直接顯示
             advice_html = advice_content
