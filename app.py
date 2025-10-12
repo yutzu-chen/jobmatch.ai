@@ -376,7 +376,7 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
             full_prompt,
             generation_config=genai.types.GenerationConfig(
                 temperature=0.3,
-                max_output_tokens=2000,  # 增加 token 限制
+                max_output_tokens=4000,  # 增加 token 限制以避免截斷
             )
         )
         
@@ -417,12 +417,27 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
                 if json_text.count("{") > json_text.count("}"):
                     # 缺少右括號，嘗試補全
                     missing_braces = json_text.count("{") - json_text.count("}")
+                    # 簡單補全：添加缺失的右括號
                     json_text += "}" * missing_braces
+                    # 如果最後一個字符不是 }，添加一個
+                    if not json_text.endswith("}"):
+                        json_text += "}"
                 else:
                     # 多餘的右括號，移除
                     extra_braces = json_text.count("}") - json_text.count("{")
                     for _ in range(extra_braces):
                         json_text = json_text.rsplit("}", 1)[0]
+            
+            # 如果 JSON 仍然不完整，嘗試添加基本的結束結構
+            if not json_text.strip().endswith("}"):
+                # 檢查是否缺少基本的結束結構
+                if '"advice"' in json_text and not json_text.strip().endswith("}"):
+                    # 嘗試添加基本的結束結構
+                    json_text = json_text.rstrip() + '}}'
+                elif '"missing"' in json_text and not json_text.strip().endswith("}"):
+                    json_text = json_text.rstrip() + '}'
+                elif '"matched"' in json_text and not json_text.strip().endswith("}"):
+                    json_text = json_text.rstrip() + '}'
             
             result = json.loads(json_text)
             return result
