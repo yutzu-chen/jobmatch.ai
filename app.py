@@ -132,21 +132,6 @@ st.markdown("""
         font-weight: 600;
     }
     
-    /* 預設隱藏 sidebar */
-    </style>
-    <script>
-    // 預設隱藏 sidebar
-    window.addEventListener('load', function() {
-        setTimeout(function() {
-            const sidebar = document.querySelector('[data-testid="stSidebar"]');
-            if (sidebar) {
-                sidebar.style.display = 'none';
-            }
-        }, 100);
-    });
-    </script>
-    <style>
-    
     /* 輸入框樣式 */
     .stTextArea > div > div > textarea {
         border: 1px solid #e1e5e9;
@@ -584,26 +569,6 @@ def display_results(result, language="中文"):
 def main():
     # 側邊欄設置（先設置語言）
     with st.sidebar:
-        # 使用 JavaScript 偵測瀏覽器語言並設置預設值
-        st.markdown("""
-        <script>
-        // 獲取瀏覽器語言
-        const browserLang = navigator.language || navigator.userLanguage;
-        const isChinese = browserLang.startsWith('zh');
-        
-        // 等待頁面加載完成後設置 selectbox 的值
-        window.addEventListener('load', function() {
-            setTimeout(function() {
-                const selectbox = document.querySelector('[data-testid="stSelectbox"] select');
-                if (selectbox) {
-                    selectbox.selectedIndex = isChinese ? 0 : 1;
-                    selectbox.dispatchEvent(new Event('change', { bubbles: true }));
-                }
-            }, 500);
-        });
-        </script>
-        """, unsafe_allow_html=True)
-        
         language = st.selectbox("語言", ["中文", "English"], index=0)
     
     # 根據選擇的語言獲取文字
@@ -679,3 +644,34 @@ def main():
 
 if __name__ == "__main__":
     main()
+    
+    # 添加 JavaScript 來處理語言偵測和 sidebar 隱藏
+    st.markdown("""
+    <script>
+    // 頁面加載完成後執行
+    window.addEventListener('load', function() {
+        // 隱藏 sidebar
+        setTimeout(function() {
+            const sidebar = document.querySelector('[data-testid="stSidebar"]');
+            if (sidebar) {
+                sidebar.style.display = 'none';
+            }
+        }, 100);
+        
+        // 語言偵測和設置
+        setTimeout(function() {
+            const browserLang = navigator.language || navigator.userLanguage;
+            const isChinese = browserLang.startsWith('zh');
+            
+            const selectbox = document.querySelector('[data-testid="stSelectbox"] select');
+            if (selectbox && selectbox.selectedIndex === 0) {
+                // 只有在預設選擇中文時才自動切換
+                if (!isChinese) {
+                    selectbox.selectedIndex = 1;
+                    selectbox.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }
+        }, 500);
+    });
+    </script>
+    """, unsafe_allow_html=True)
