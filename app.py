@@ -132,42 +132,6 @@ st.markdown("""
         font-weight: 600;
     }
     
-    /* 隱藏標題中的錨點鏈接 */
-    .advice-box h4 a {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
-    
-    .advice-box h4 [data-testid="StyledLinkIconContainer"] {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        pointer-events: none !important;
-    }
-    
-    .advice-box h4 svg {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-    }
-    
-    /* 隱藏整個錨點容器 */
-    .advice-box h4 > div {
-        display: flex !important;
-        align-items: center !important;
-    }
-    
-    .advice-box h4 > div > a {
-        display: none !important;
-        visibility: hidden !important;
-        opacity: 0 !important;
-        width: 0 !important;
-        height: 0 !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
     
     /* 輸入框樣式 */
     .stTextArea > div > div > textarea {
@@ -581,7 +545,7 @@ def display_results(result, language="中文"):
                     # 使用翻譯後的標題，如果沒有找到則使用原始標題
                     display_title = texts.get(config.get("key", ""), title)
                     
-                    advice_html += f"<h4 style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem;'>{display_title}</h4><ul style='margin-bottom: 1rem;'>"
+                    advice_html += f"<div style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 600;'>{display_title}</div><ul style='margin-bottom: 1rem;'>"
                     for item in items:
                         # 將 **文字** 轉換為 <strong>文字</strong>
                         import re
