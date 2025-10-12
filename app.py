@@ -280,17 +280,20 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 {{
   "match_score": 整數0-100,
   "confidence": 浮點0-1,
-  "priorities": [{{"name":字串,"weight":0-1}}],
+  "match_explanation": "解釋為什麼是這個分數，例如：在5項關鍵技能中符合3項，得分75%",
+  "priorities": [{{"name":字串,"weight":0-1,"explanation":字串}}],
   "matched": [{{"item":字串,"evidence":[字串...]}}],
   "missing": [{{"item":字串,"action":字串}}],
-  "advice": 字串(3-5句)
+  "advice": {{"標題1": ["建議1", "建議2"], "標題2": ["建議3", "建議4"]}}
 }}
 
-規則：
+重要規則：
 - 所有回應文字必須使用{language}
-- priorities 依 JD 語義排序（設計系統、Web框架、AI in UI、跨平台協作、溝通/對齊...）
-- matched/missing 需以履歷/職缺原文為佐證（給 evidence）
-- advice 語氣自然，給可落地的一週行動
+- match_explanation：必須解釋為什麼是這個分數，例如「在5項關鍵技能中符合3項，得分75%」
+- priorities：必須針對職缺內容挑出重要關鍵技能，每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣
+- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當；不用寫「來自履歷」
+- missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
+- advice：要列點、要有標題，格式為物件包含多個標題和對應的建議列表
 - 僅回 JSON，不要其他文字"""
 
     user_prompt = f"""
@@ -356,6 +359,7 @@ def display_results(result, language="中文"):
     # 匹配度分數
     match_score = result.get('match_score', 0)
     confidence = result.get('confidence', 0)
+    match_explanation = result.get('match_explanation', '')
     
     # 計算信心指標
     confidence_text = ""
@@ -374,6 +378,7 @@ def display_results(result, language="中文"):
         <h1 class="score-number">{match_score}%</h1>
         <p class="score-label">{texts['match_score_label']}</p>
         <p style="font-size: 0.9rem; margin-top: 0.5rem; color: {confidence_color}; font-weight: 500;">{confidence_text}</p>
+        <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.8;">{match_explanation}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -390,15 +395,18 @@ def display_results(result, language="中文"):
             if isinstance(priority, dict):
                 name = priority.get('name', '')
                 weight = priority.get('weight', 0)
+                explanation = priority.get('explanation', '')
                 weight_percent = int(weight * 100)
                 color = "#28a745" if weight >= 0.7 else "#ffc107" if weight >= 0.5 else "#dc3545"
                 
                 st.markdown(f"""
-                <div style="display: flex; justify-content: space-between; align-items: center; 
-                           background: #f8f9fa; padding: 0.8rem; margin: 0.3rem 0; border-radius: 6px; 
+                <div style="background: #f8f9fa; padding: 0.8rem; margin: 0.3rem 0; border-radius: 6px; 
                            border-left: 3px solid {color};">
-                    <span style="font-weight: 500;">{i}. {name}</span>
-                    <span style="font-weight: bold; color: {color};">{weight_percent}%</span>
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                        <span style="font-weight: 500;">{i}. {name}</span>
+                        <span style="font-weight: bold; color: {color};">{weight_percent}%</span>
+                    </div>
+                    <small style="color: #666; font-size: 0.8rem;">{explanation}</small>
                 </div>
                 """, unsafe_allow_html=True)
             else:
@@ -414,11 +422,15 @@ def display_results(result, language="中文"):
             for item in result['matched']:
                 # 處理新格式（有item和evidence）或舊格式
                 if isinstance(item, dict) and 'item' in item and 'evidence' in item:
-                    evidence_text = "、".join(item['evidence'][:2])  # 只顯示前2個證據
+                    evidence_list = item['evidence']
+                    evidence_html = "<ul style='margin: 0.3rem 0; padding-left: 1.2rem;'>"
+                    for evidence in evidence_list:
+                        evidence_html += f"<li style='margin: 0.2rem 0;'>{evidence}</li>"
+                    evidence_html += "</ul>"
                     st.markdown(f'''
                     <div class="matched-item">
-                        <strong>{item["item"]}</strong><br>
-                        <small style="color: #666; font-style: italic;">來自履歷：{evidence_text}</small>
+                        <strong>{item["item"]}</strong>
+                        {evidence_html}
                     </div>
                     ''', unsafe_allow_html=True)
                 elif isinstance(item, dict) and 'title' in item and 'description' in item:
@@ -437,7 +449,7 @@ def display_results(result, language="中文"):
                     st.markdown(f'''
                     <div class="missing-item">
                         <strong>{item["item"]}</strong><br>
-                        <small style="color: #666; font-style: italic;">建議行動：{item["action"]}</small>
+                        <span style="color: #666;">{item["action"]}</span>
                     </div>
                     ''', unsafe_allow_html=True)
                 elif isinstance(item, dict) and 'title' in item and 'description' in item:
@@ -453,37 +465,23 @@ def display_results(result, language="中文"):
         
         advice_content = result['advice']
         
-        # 處理新格式（字符串）或舊格式（字典/列表）
-        if isinstance(advice_content, str):
-            # 新格式：直接顯示字符串建議
-            advice_html = advice_content
-        elif isinstance(advice_content, dict):
-            # 舊格式：處理分類建議
+        # 處理新格式（帶標題的物件）或舊格式
+        if isinstance(advice_content, dict):
             advice_html = ""
+            colors = ['#dc3545', '#007bff', '#28a745', '#6f42c1', '#fd7e14']
+            color_index = 0
             
-            # 立即行動建議
-            if 'immediate_actions' in advice_content and advice_content['immediate_actions']:
-                advice_html += "<h4 style='color: #dc3545; margin-top: 1rem;'>立即行動</h4><ul>"
-                for item in advice_content['immediate_actions']:
-                    clean_item = item.replace("立即行動：", "").replace("立即行動:", "").strip()
-                    advice_html += f"<li>{clean_item}</li>"
-                advice_html += "</ul>"
-            
-            # 技能發展建議
-            if 'skill_development' in advice_content and advice_content['skill_development']:
-                advice_html += "<h4 style='color: #007bff; margin-top: 1rem;'>技能發展</h4><ul>"
-                for item in advice_content['skill_development']:
-                    clean_item = item.replace("技能發展：", "").replace("技能發展:", "").replace("技能提升：", "").replace("技能提升:", "").strip()
-                    advice_html += f"<li>{clean_item}</li>"
-                advice_html += "</ul>"
-            
-            # 職涯指導建議
-            if 'career_guidance' in advice_content and advice_content['career_guidance']:
-                advice_html += "<h4 style='color: #28a745; margin-top: 1rem;'>職涯指導</h4><ul>"
-                for item in advice_content['career_guidance']:
-                    clean_item = item.replace("職涯指導：", "").replace("職涯指導:", "").replace("職涯發展：", "").replace("職涯發展:", "").strip()
-                    advice_html += f"<li>{clean_item}</li>"
-                advice_html += "</ul>"
+            for title, items in advice_content.items():
+                if items and len(items) > 0:
+                    color = colors[color_index % len(colors)]
+                    advice_html += f"<h4 style='color: {color}; margin-top: 1rem;'>{title}</h4><ul>"
+                    for item in items:
+                        advice_html += f"<li>{item}</li>"
+                    advice_html += "</ul>"
+                    color_index += 1
+        elif isinstance(advice_content, str):
+            # 字符串格式：直接顯示
+            advice_html = advice_content
         elif isinstance(advice_content, list):
             advice_html = "<ul>"
             for item in advice_content:
