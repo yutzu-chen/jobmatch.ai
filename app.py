@@ -132,6 +132,15 @@ st.markdown("""
         font-weight: 600;
     }
     
+    /* 隱藏標題中的錨點鏈接 */
+    .advice-box h4 a {
+        display: none !important;
+    }
+    
+    .advice-box h4 [data-testid="StyledLinkIconContainer"] {
+        display: none !important;
+    }
+    
     /* 輸入框樣式 */
     .stTextArea > div > div > textarea {
         border: 1px solid #e1e5e9;
