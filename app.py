@@ -236,7 +236,7 @@ def get_ui_texts(language):
             "analyze_button": "Start Analysis",
             "analyze_another": "Analyze Another Job",
             "match_score_label": "Overall Match Score",
-            "priorities_title": "Job Key Skills",
+            "priorities_title": "Job Key Experience/Skills",
             "matched_title": "My Matching Experience",
             "missing_title": "Missing Experience",
             "advice_title": "AI Recommendations",
