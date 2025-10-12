@@ -247,45 +247,6 @@ def get_ui_texts(language):
             "analysis_failed": "Analysis failed, please check API settings or try again later",
             "fill_required": "Please fill in resume content and job description"
         },
-        "Deutsch": {
-            "app_title": "MatchMe.AI",
-            "app_subtitle": "KI Lebenslauf-Stellenanalyse Tool - Kennen Sie Ihre Stärken und Lücken",
-            "settings_title": "Einstellungen",
-            "language_label": "Analyse-Sprache",
-            "instructions_title": "Anweisungen",
-            "instructions": [
-                "Fügen Sie Ihren Lebenslauf links ein",
-                "Fügen Sie die Stellenbeschreibung rechts ein",
-                "Klicken Sie auf 'Analyse starten'",
-                "Sehen Sie sich die Übereinstimmungsergebnisse an"
-            ],
-            "privacy_title": "Datenschutz",
-            "privacy": [
-                "Keine Lebenslauf-Inhalte werden gespeichert",
-                "Automatisch nach der Analyse gelöscht",
-                "Völlig kostenlos zu verwenden"
-            ],
-            "resume_title": "Lebenslauf-Inhalt",
-            "resume_placeholder": "Bitte fügen Sie Ihren Lebenslauf ein (mehrsprachig unterstützt)",
-            "resume_example": "Beispiel:\nName: Max Mustermann\nBildung: Informatik, TU München\nErfahrung:\n- 2020-2022 Softwareentwickler, Frontend\n- Kenntnisse in React, JavaScript, Python\n...",
-            "job_title": "Stellenbeschreibung",
-            "job_placeholder": "Bitte fügen Sie die Stellenbeschreibung ein",
-            "job_example": "Beispiel:\nPosition: Frontend-Entwickler\nAnforderungen:\n- 3+ Jahre React-Entwicklungserfahrung\n- Kenntnisse in JavaScript, TypeScript\n- Teamfähigkeit\n- Produktdenken\n...",
-            "analyze_button": "Analyse starten",
-            "analyze_another": "Andere Stelle analysieren",
-            "match_score_label": "Gesamtübereinstimmung",
-            "priorities_title": "Prioritätsfähigkeiten der Stelle",
-            "matched_title": "Meine passende Erfahrung",
-            "missing_title": "Fehlende Erfahrung",
-            "advice_title": "KI-Empfehlungen",
-            "no_matched": "Keine passende Erfahrung gefunden",
-            "all_skills_met": "Alle Schlüsselfähigkeiten erfüllt!",
-            "copy_advice": "Empfehlungen kopieren",
-            "analyzing": "KI analysiert, bitte warten...",
-            "analysis_complete": "Analyse abgeschlossen!",
-            "analysis_failed": "Analyse fehlgeschlagen, bitte API-Einstellungen prüfen oder später erneut versuchen",
-            "fill_required": "Bitte Lebenslauf und Stellenbeschreibung ausfüllen"
-        }
     }
     return texts.get(language, texts["中文"])
 
@@ -502,7 +463,7 @@ def display_results(result, language="中文"):
 def main():
     # 側邊欄設置（先設置語言）
     with st.sidebar:
-        language = st.selectbox("分析語言 / Analysis Language / Analyse-Sprache", ["中文", "English", "Deutsch"], index=0)
+        language = st.selectbox("語言", ["中文", "English"], index=0)
     
     # 根據選擇的語言獲取文字
     texts = get_ui_texts(language)
