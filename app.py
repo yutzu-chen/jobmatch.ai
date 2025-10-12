@@ -32,7 +32,8 @@ st.markdown("""
         font-weight: 300;
         text-align: center;
         color: #1a1a1a;
-        margin-bottom: 1rem;
+        margin-bottom: 2rem;
+        margin-top: 1rem;
         letter-spacing: -0.02em;
     }
     
@@ -170,7 +171,7 @@ def get_ui_texts(language):
     """根據語言返回界面文字"""
     texts = {
         "中文": {
-            "app_title": "MatchMe.AI",
+            "app_title": "JobMatch.AI",
             "app_subtitle": "AI 履歷職缺匹配分析工具 - 讓你知道自己強在哪、還差什麼",
             "settings_title": "設置",
             "language_label": "分析語言",
@@ -209,7 +210,7 @@ def get_ui_texts(language):
             "fill_required": "請填寫履歷內容和職缺描述"
         },
         "English": {
-            "app_title": "MatchMe.AI",
+            "app_title": "JobMatch.AI",
             "app_subtitle": "AI Resume-Job Matching Analysis Tool - Know your strengths and gaps",
             "settings_title": "Settings",
             "language_label": "Analysis Language",
@@ -284,6 +285,8 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 - 所有文字必須使用{language}，保持語言一致性
 - 技能分數基於履歷中相關經驗的深度和相關性評分
 - 建議內容不要重複標題文字，直接提供具體行動建議
+- 建議必須具體且可執行，包含具體的學習資源、工具、平台或行動步驟
+- 避免籠統的建議，要提供明確的下一步行動
 
 僅以 JSON 格式回覆：
 
@@ -296,9 +299,9 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
  "matched": [{{"title": "經驗標題A", "description": "履歷中的具體描述A"}}, {{"title": "經驗標題B", "description": "履歷中的具體描述B"}}],
  "missing": [{{"title": "缺少標題A", "description": "履歷缺少的具體描述A"}}, {{"title": "缺少標題B", "description": "履歷缺少的具體描述B"}}],
  "advice": {{
-   "immediate_actions": ["具體行動建議1", "具體行動建議2"],
-   "skill_development": ["技能提升建議1", "技能提升建議2"],
-   "career_guidance": ["職涯發展建議1", "職涯發展建議2"]
+   "immediate_actions": ["在履歷中補充具體的數據分析項目經驗，如使用Python分析用戶行為數據", "在LinkedIn上關注相關行業專家，學習最新的產品管理趨勢"],
+   "skill_development": ["完成Coursera的Google Data Analytics證書課程，預計3個月", "學習Figma設計工具，完成至少2個UI/UX設計項目"],
+   "career_guidance": ["申請產品經理實習職位，累積實際產品開發經驗", "參加產品管理社群活動，建立行業人脈網絡"]
  }}
 }}"""
 

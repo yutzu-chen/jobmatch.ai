@@ -1,4 +1,4 @@
-# MatchMe.AI - AI 履歷職缺匹配分析工具
+# JobMatch.AI - AI 履歷職缺匹配分析工具
 
 一個使用 AI 分析履歷與職缺匹配度的智能工具，幫助求職者了解自己的優勢和需要改進的地方。
 
@@ -66,4 +66,4 @@ MIT License
 
 ---
 
-**MatchMe.AI** - 讓 AI 幫你找到理想工作！
+**JobMatch.AI** - 讓 AI 幫你找到理想工作！
