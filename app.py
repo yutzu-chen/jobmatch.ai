@@ -567,8 +567,9 @@ def display_results(result, language="中文"):
         st.markdown(f'<div class="advice-box">{advice_html}</div>', unsafe_allow_html=True)
 
 def main():
-    # 側邊欄設置（先設置語言）
-    with st.sidebar:
+    # 語言選擇（放在頁面頂部）
+    col1, col2, col3 = st.columns([1, 1, 1])
+    with col3:
         language = st.selectbox("語言", ["中文", "English"], index=0)
     
     # 根據選擇的語言獲取文字
@@ -577,18 +578,6 @@ def main():
     # 主標題
     st.markdown(f'<h1 class="main-header">{texts["app_title"]}</h1>', unsafe_allow_html=True)
     st.markdown(f'<p class="subtitle">{texts["app_subtitle"]}</p>', unsafe_allow_html=True)
-    
-    # 側邊欄設置
-    with st.sidebar:
-        st.markdown(f"### {texts['settings_title']}")
-        
-        st.markdown(f"### {texts['instructions_title']}")
-        for i, instruction in enumerate(texts['instructions'], 1):
-            st.markdown(f"{i}. {instruction}")
-        
-        st.markdown(f"### {texts['privacy_title']}")
-        for privacy_item in texts['privacy']:
-            st.markdown(f"- {privacy_item}")
     
     # 主要輸入區域
     col1, col2 = st.columns(2)
@@ -645,44 +634,11 @@ def main():
 if __name__ == "__main__":
     main()
     
-    # 添加 JavaScript 來處理語言偵測和 sidebar 隱藏
+    # 添加 JavaScript 來處理語言偵測
     st.markdown("""
     <script>
-    // 立即執行和延遲執行結合
-    function hideSidebar() {
-        // 嘗試多種選擇器
-        const selectors = [
-            '[data-testid="stSidebar"]',
-            '.css-1d391kg',
-            '.stSidebar',
-            'section[data-testid="stSidebar"]'
-        ];
-        
-        for (const selector of selectors) {
-            const sidebar = document.querySelector(selector);
-            if (sidebar) {
-                sidebar.style.display = 'none';
-                sidebar.style.visibility = 'hidden';
-                sidebar.style.opacity = '0';
-                sidebar.style.width = '0';
-                sidebar.style.minWidth = '0';
-                break;
-            }
-        }
-    }
-    
-    // 立即執行
-    hideSidebar();
-    
-    // 頁面加載完成後執行
+    // 頁面加載完成後執行語言偵測
     window.addEventListener('load', function() {
-        hideSidebar();
-        
-        // 多次嘗試隱藏
-        setTimeout(hideSidebar, 100);
-        setTimeout(hideSidebar, 500);
-        setTimeout(hideSidebar, 1000);
-        
         // 語言偵測和設置
         setTimeout(function() {
             const browserLang = navigator.language || navigator.userLanguage;
@@ -697,12 +653,6 @@ if __name__ == "__main__":
                 }
             }
         }, 500);
-    });
-    
-    // DOM 內容加載完成後也執行
-    document.addEventListener('DOMContentLoaded', function() {
-        hideSidebar();
-        setTimeout(hideSidebar, 100);
     });
     </script>
     """, unsafe_allow_html=True)
