@@ -135,10 +135,38 @@ st.markdown("""
     /* 隱藏標題中的錨點鏈接 */
     .advice-box h4 a {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
     }
     
     .advice-box h4 [data-testid="StyledLinkIconContainer"] {
         display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        pointer-events: none !important;
+    }
+    
+    .advice-box h4 svg {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+    }
+    
+    /* 隱藏整個錨點容器 */
+    .advice-box h4 > div {
+        display: flex !important;
+        align-items: center !important;
+    }
+    
+    .advice-box h4 > div > a {
+        display: none !important;
+        visibility: hidden !important;
+        opacity: 0 !important;
+        width: 0 !important;
+        height: 0 !important;
+        margin: 0 !important;
+        padding: 0 !important;
     }
     
     /* 輸入框樣式 */
