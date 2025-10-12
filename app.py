@@ -132,6 +132,17 @@ st.markdown("""
         font-weight: 600;
     }
     
+    /* 語言選擇器樣式 */
+    .stSelectbox > div > div {
+        width: 120px !important;
+    }
+    
+    .stSelectbox > div > div > select {
+        font-size: 0.8rem !important;
+        padding: 0.3rem 0.5rem !important;
+        height: 2rem !important;
+    }
+    
     /* 輸入框樣式 */
     .stTextArea > div > div > textarea {
         border: 1px solid #e1e5e9;
@@ -567,10 +578,10 @@ def display_results(result, language="中文"):
         st.markdown(f'<div class="advice-box">{advice_html}</div>', unsafe_allow_html=True)
 
 def main():
-    # 語言選擇（放在頁面頂部）
-    col1, col2, col3 = st.columns([1, 1, 1])
-    with col3:
-        language = st.selectbox("語言", ["中文", "English"], index=0)
+    # 語言選擇（放在頁面左上角）
+    col1, col2 = st.columns([1, 4])
+    with col1:
+        language = st.selectbox("語言", ["中文", "English"], index=0, label_visibility="collapsed")
     
     # 根據選擇的語言獲取文字
     texts = get_ui_texts(language)
