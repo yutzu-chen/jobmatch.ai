@@ -328,7 +328,7 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
             full_prompt,
             generation_config=genai.types.GenerationConfig(
                 temperature=0.3,
-                max_output_tokens=1000,
+                max_output_tokens=2000,  # 增加 token 限制
             )
         )
         
@@ -336,23 +336,53 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
         
         # 嘗試解析 JSON
         try:
+            # 檢查回應是否為空
+            if not response_text or response_text.strip() == "":
+                st.error("❌ AI 回應為空，請檢查 API 設置")
+                return None
+            
             # 清理回應文本，提取 JSON 部分
+            json_text = ""
             if "```json" in response_text:
                 json_start = response_text.find("```json") + 7
                 json_end = response_text.find("```", json_start)
-                json_text = response_text[json_start:json_end].strip()
+                if json_end > json_start:
+                    json_text = response_text[json_start:json_end].strip()
             elif "{" in response_text and "}" in response_text:
                 json_start = response_text.find("{")
                 json_end = response_text.rfind("}") + 1
                 json_text = response_text[json_start:json_end]
             else:
-                json_text = response_text
+                json_text = response_text.strip()
+            
+            # 檢查提取的 JSON 是否為空
+            if not json_text:
+                st.error("❌ 無法從 AI 回應中提取 JSON 內容")
+                st.text("原始回應:")
+                st.text(response_text)
+                return None
+            
+            # 檢查 JSON 是否被截斷
+            if json_text.count("{") != json_text.count("}"):
+                st.warning("⚠️ JSON 回應可能被截斷，嘗試修復...")
+                # 嘗試修復截斷的 JSON
+                if json_text.count("{") > json_text.count("}"):
+                    # 缺少右括號，嘗試補全
+                    missing_braces = json_text.count("{") - json_text.count("}")
+                    json_text += "}" * missing_braces
+                else:
+                    # 多餘的右括號，移除
+                    extra_braces = json_text.count("}") - json_text.count("{")
+                    for _ in range(extra_braces):
+                        json_text = json_text.rsplit("}", 1)[0]
             
             result = json.loads(json_text)
             return result
             
         except json.JSONDecodeError as e:
             st.error(f"❌ JSON 解析失敗: {str(e)}")
+            st.text("提取的 JSON 文本:")
+            st.text(json_text)
             st.text("原始回應:")
             st.text(response_text)
             return None
