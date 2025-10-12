@@ -132,6 +132,20 @@ st.markdown("""
         font-weight: 600;
     }
     
+    /* 預設隱藏 sidebar */
+    </style>
+    <script>
+    // 預設隱藏 sidebar
+    window.addEventListener('load', function() {
+        setTimeout(function() {
+            const sidebar = document.querySelector('[data-testid="stSidebar"]');
+            if (sidebar) {
+                sidebar.style.display = 'none';
+            }
+        }, 100);
+    });
+    </script>
+    <style>
     
     /* 輸入框樣式 */
     .stTextArea > div > div > textarea {
