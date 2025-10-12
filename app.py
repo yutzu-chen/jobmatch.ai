@@ -261,7 +261,7 @@ def initialize_gemini_client():
     
     try:
         genai.configure(api_key=api_key)
-        model = genai.GenerativeModel('gemini-1.5-flash')
+        model = genai.GenerativeModel('gemini-pro')
         return model
     except Exception as e:
         st.error(f"❌ Gemini 客戶端初始化失敗: {str(e)}")
