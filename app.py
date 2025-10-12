@@ -215,6 +215,11 @@ def get_ui_texts(language):
             "matched_title": "我符合的經驗",
             "missing_title": "我缺少的經驗",
             "advice_title": "AI 建議",
+            "advice_resume_optimization": "履歷優化",
+            "advice_cover_letter": "求職信建議",
+            "advice_skill_gap": "技能差距分析",
+            "advice_interview": "面試準備建議",
+            "advice_portfolio": "作品集建議",
             "no_matched": "暫無符合的經驗",
             "all_skills_met": "所有關鍵技能都已具備！",
             "copy_advice": "複製建議文字",
@@ -254,6 +259,11 @@ def get_ui_texts(language):
             "matched_title": "My Matching Experience",
             "missing_title": "Missing Experience",
             "advice_title": "AI Recommendations",
+            "advice_resume_optimization": "Resume Optimization",
+            "advice_cover_letter": "Cover Letter Suggestions",
+            "advice_skill_gap": "Skill Gap Analysis",
+            "advice_interview": "Interview Preparation",
+            "advice_portfolio": "Portfolio Suggestions",
             "no_matched": "No matching experience found",
             "all_skills_met": "All key skills are met!",
             "copy_advice": "Copy Recommendations",
@@ -512,13 +522,18 @@ def display_results(result, language="中文"):
         if isinstance(advice_content, dict):
             advice_html = ""
             
-            # 定義每個類別的顏色
+            # 定義每個類別的顏色和翻譯映射
             advice_config = {
-                "履歷優化": {"color": "#dc3545"},
-                "求職信建議": {"color": "#007bff"},
-                "技能差距分析": {"color": "#28a745"},
-                "面試準備建議": {"color": "#6f42c1"},
-                "作品集建議": {"color": "#fd7e14"}
+                "履歷優化": {"color": "#dc3545", "key": "advice_resume_optimization"},
+                "求職信建議": {"color": "#007bff", "key": "advice_cover_letter"},
+                "技能差距分析": {"color": "#28a745", "key": "advice_skill_gap"},
+                "面試準備建議": {"color": "#6f42c1", "key": "advice_interview"},
+                "作品集建議": {"color": "#fd7e14", "key": "advice_portfolio"},
+                "Resume Optimization": {"color": "#dc3545", "key": "advice_resume_optimization"},
+                "Cover Letter Suggestions": {"color": "#007bff", "key": "advice_cover_letter"},
+                "Skill Gap Analysis": {"color": "#28a745", "key": "advice_skill_gap"},
+                "Interview Preparation": {"color": "#6f42c1", "key": "advice_interview"},
+                "Portfolio Suggestions": {"color": "#fd7e14", "key": "advice_portfolio"}
             }
             
             for title, items in advice_content.items():
@@ -526,7 +541,10 @@ def display_results(result, language="中文"):
                     config = advice_config.get(title, {"color": "#666"})
                     color = config["color"]
                     
-                    advice_html += f"<h4 style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem;'>{title}</h4><ul style='margin-bottom: 1rem;'>"
+                    # 使用翻譯後的標題，如果沒有找到則使用原始標題
+                    display_title = texts.get(config.get("key", ""), title)
+                    
+                    advice_html += f"<h4 style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem;'>{display_title}</h4><ul style='margin-bottom: 1rem;'>"
                     for item in items:
                         # 將 **文字** 轉換為 <strong>文字</strong>
                         import re
