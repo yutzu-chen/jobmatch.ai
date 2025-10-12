@@ -315,7 +315,7 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
          - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
            * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
-           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用台灣自然中文，不用敬語，可以用「你」）
+           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用{language}，自然表達，不用敬語，可以用「你」）
            * 技能差距分析：缺少技能、學習方向、免費資源/課程建議
            * 面試準備建議：潛在問題、回答方向、STAR回答框架提示
            * 作品集建議：小專案題目、展示建議
@@ -526,7 +526,7 @@ def display_results(result, language="中文"):
                     config = advice_config.get(title, {"color": "#666"})
                     color = config["color"]
                     
-                    advice_html += f"<h4 style='color: {color}; margin-top: 1.5rem; margin-bottom: 0.5rem;'>{title}</h4><ul style='margin-bottom: 1rem;'>"
+                    advice_html += f"<h4 style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem;'>{title}</h4><ul style='margin-bottom: 1rem;'>"
                     for item in items:
                         # 將 **文字** 轉換為 <strong>文字</strong>
                         import re
