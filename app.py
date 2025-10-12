@@ -1,8 +1,5 @@
 import streamlit as st
 import json
-import pandas as pd
-import plotly.express as px
-import plotly.graph_objects as go
 from groq import Groq
 import os
 from dotenv import load_dotenv
