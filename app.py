@@ -515,7 +515,7 @@ def display_results(result, language="中文"):
     
     # AI 建議
     if 'advice' in result and result['advice']:
-        st.markdown(f"### {texts['advice_title']}")
+        st.markdown(f"<div style='font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 1rem 0; color: #1a1a1a;'>{texts['advice_title']}</div>", unsafe_allow_html=True)
         
         advice_content = result['advice']
         
