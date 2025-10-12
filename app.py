@@ -197,7 +197,7 @@ def get_ui_texts(language):
             "analyze_button": "開始分析",
             "analyze_another": "分析另一份職缺",
             "match_score_label": "總體匹配度",
-            "priorities_title": "職缺關鍵技能",
+            "priorities_title": "職缺關鍵經驗/技能",
             "matched_title": "我符合的經驗",
             "missing_title": "我缺少的經驗",
             "advice_title": "AI 建議",
@@ -515,7 +515,9 @@ def display_results(result, language="中文"):
                     
                     advice_html += f"<h4 style='color: {color}; margin-top: 1.5rem; margin-bottom: 0.5rem;'>{icon} {title}</h4><ul style='margin-bottom: 1rem;'>"
                     for item in items:
-                        advice_html += f"<li style='margin: 0.3rem 0; line-height: 1.5;'>{item}</li>"
+                        # 清理 Markdown 格式標記
+                        clean_item = item.replace("**", "").replace("*", "").strip()
+                        advice_html += f"<li style='margin: 0.3rem 0; line-height: 1.5;'>{clean_item}</li>"
                     advice_html += "</ul>"
         elif isinstance(advice_content, str):
             # 字符串格式：直接顯示
