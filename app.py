@@ -584,6 +584,26 @@ def display_results(result, language="中文"):
 def main():
     # 側邊欄設置（先設置語言）
     with st.sidebar:
+        # 使用 JavaScript 偵測瀏覽器語言並設置預設值
+        st.markdown("""
+        <script>
+        // 獲取瀏覽器語言
+        const browserLang = navigator.language || navigator.userLanguage;
+        const isChinese = browserLang.startsWith('zh');
+        
+        // 等待頁面加載完成後設置 selectbox 的值
+        window.addEventListener('load', function() {
+            setTimeout(function() {
+                const selectbox = document.querySelector('[data-testid="stSelectbox"] select');
+                if (selectbox) {
+                    selectbox.selectedIndex = isChinese ? 0 : 1;
+                    selectbox.dispatchEvent(new Event('change', { bubbles: true }));
+                }
+            }, 500);
+        });
+        </script>
+        """, unsafe_allow_html=True)
+        
         language = st.selectbox("語言", ["中文", "English"], index=0)
     
     # 根據選擇的語言獲取文字
