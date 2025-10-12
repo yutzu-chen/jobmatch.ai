@@ -498,22 +498,21 @@ def display_results(result, language="中文"):
         if isinstance(advice_content, dict):
             advice_html = ""
             
-            # 定義每個類別的圖標和顏色
+            # 定義每個類別的顏色
             advice_config = {
-                "履歷優化": {"icon": "📌", "color": "#dc3545"},
-                "求職信建議": {"icon": "✉️", "color": "#007bff"},
-                "技能差距分析": {"icon": "🧭", "color": "#28a745"},
-                "面試準備建議": {"icon": "📈", "color": "#6f42c1"},
-                "作品集建議": {"icon": "🧩", "color": "#fd7e14"}
+                "履歷優化": {"color": "#dc3545"},
+                "求職信建議": {"color": "#007bff"},
+                "技能差距分析": {"color": "#28a745"},
+                "面試準備建議": {"color": "#6f42c1"},
+                "作品集建議": {"color": "#fd7e14"}
             }
             
             for title, items in advice_content.items():
                 if items and len(items) > 0:
-                    config = advice_config.get(title, {"icon": "💡", "color": "#666"})
-                    icon = config["icon"]
+                    config = advice_config.get(title, {"color": "#666"})
                     color = config["color"]
                     
-                    advice_html += f"<h4 style='color: {color}; margin-top: 1.5rem; margin-bottom: 0.5rem;'>{icon} {title}</h4><ul style='margin-bottom: 1rem;'>"
+                    advice_html += f"<h4 style='color: {color}; margin-top: 1.5rem; margin-bottom: 0.5rem;'>{title}</h4><ul style='margin-bottom: 1rem;'>"
                     for item in items:
                         # 清理 Markdown 格式標記
                         clean_item = item.replace("**", "").replace("*", "").strip()
