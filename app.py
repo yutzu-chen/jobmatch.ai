@@ -196,7 +196,7 @@ def get_ui_texts(language):
             "analyze_button": "開始分析匹配度",
             "analyze_another": "分析另一份職缺",
             "match_score_label": "總體匹配度",
-            "priorities_title": "職缺關鍵技能優先級",
+            "priorities_title": "職缺關鍵技能",
             "matched_title": "我符合的經驗",
             "missing_title": "我缺少的經驗",
             "advice_title": "AI 建議",
@@ -235,7 +235,7 @@ def get_ui_texts(language):
             "analyze_button": "Start Analysis",
             "analyze_another": "Analyze Another Job",
             "match_score_label": "Overall Match Score",
-            "priorities_title": "Job Priority Skills",
+            "priorities_title": "Job Key Skills",
             "matched_title": "My Matching Experience",
             "missing_title": "Missing Experience",
             "advice_title": "AI Recommendations",
@@ -280,6 +280,11 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 4. 我缺少的經驗（尚未具備）- 請為每個缺少的項目生成標題和描述
 5. 建議（{language}）- 請分類並以列點方式提供具體建議
 
+重要要求：
+- 所有文字必須使用{language}，保持語言一致性
+- 技能分數基於履歷中相關經驗的深度和相關性評分
+- 建議內容不要重複標題文字，直接提供具體行動建議
+
 僅以 JSON 格式回覆：
 
 {{
@@ -287,12 +292,13 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
  "match_explanation": "匹配度解釋，例如：在5項關鍵技能中符合3項，得分75%",
  "priorities": ["技能A","技能B",...],
  "priority_scores": {{"技能A": 85, "技能B": 60, "技能C": 90, "技能D": 45, "技能E": 70}},
+ "score_explanation": "技能分數基於履歷中相關經驗的深度和相關性，90-100分表示經驗豐富，70-89分表示有一定經驗，50-69分表示基礎經驗，50分以下表示經驗不足",
  "matched": [{{"title": "經驗標題A", "description": "履歷中的具體描述A"}}, {{"title": "經驗標題B", "description": "履歷中的具體描述B"}}],
  "missing": [{{"title": "缺少標題A", "description": "履歷缺少的具體描述A"}}, {{"title": "缺少標題B", "description": "履歷缺少的具體描述B"}}],
  "advice": {{
-   "immediate_actions": ["立即行動建議1", "立即行動建議2"],
-   "skill_development": ["技能發展建議1", "技能發展建議2"],
-   "career_guidance": ["職涯指導建議1", "職涯指導建議2"]
+   "immediate_actions": ["具體行動建議1", "具體行動建議2"],
+   "skill_development": ["技能提升建議1", "技能提升建議2"],
+   "career_guidance": ["職涯發展建議1", "職涯發展建議2"]
  }}
 }}"""
 
@@ -367,11 +373,15 @@ def display_results(result, language="中文"):
     </div>
     """, unsafe_allow_html=True)
     
-    # 職缺優先技能
+    # 職缺關鍵技能
     if 'priorities' in result and result['priorities']:
         st.markdown(f"### {texts['priorities_title']}")
         
-        # 顯示技能優先級和匹配度
+        # 顯示技能分數解釋
+        if 'score_explanation' in result and result['score_explanation']:
+            st.markdown(f"<p style='font-size: 0.9rem; color: #666; margin-bottom: 1rem;'>{result['score_explanation']}</p>", unsafe_allow_html=True)
+        
+        # 顯示技能和匹配度
         if 'priority_scores' in result and result['priority_scores']:
             for i, skill in enumerate(result['priorities'], 1):
                 score = result['priority_scores'].get(skill, 0)
@@ -432,21 +442,27 @@ def display_results(result, language="中文"):
             if 'immediate_actions' in advice_content and advice_content['immediate_actions']:
                 advice_html += "<h4 style='color: #dc3545; margin-top: 1rem;'>🚀 立即行動</h4><ul>"
                 for item in advice_content['immediate_actions']:
-                    advice_html += f"<li>{item}</li>"
+                    # 移除重複的標題文字
+                    clean_item = item.replace("立即行動：", "").replace("立即行動:", "").strip()
+                    advice_html += f"<li>{clean_item}</li>"
                 advice_html += "</ul>"
             
             # 技能發展建議
             if 'skill_development' in advice_content and advice_content['skill_development']:
                 advice_html += "<h4 style='color: #007bff; margin-top: 1rem;'>📚 技能發展</h4><ul>"
                 for item in advice_content['skill_development']:
-                    advice_html += f"<li>{item}</li>"
+                    # 移除重複的標題文字
+                    clean_item = item.replace("技能發展：", "").replace("技能發展:", "").replace("技能提升：", "").replace("技能提升:", "").strip()
+                    advice_html += f"<li>{clean_item}</li>"
                 advice_html += "</ul>"
             
             # 職涯指導建議
             if 'career_guidance' in advice_content and advice_content['career_guidance']:
                 advice_html += "<h4 style='color: #28a745; margin-top: 1rem;'>💡 職涯指導</h4><ul>"
                 for item in advice_content['career_guidance']:
-                    advice_html += f"<li>{item}</li>"
+                    # 移除重複的標題文字
+                    clean_item = item.replace("職涯指導：", "").replace("職涯指導:", "").replace("職涯發展：", "").replace("職涯發展:", "").strip()
+                    advice_html += f"<li>{clean_item}</li>"
                 advice_html += "</ul>"
         
         # 處理舊格式（列表或字符串）
