@@ -195,7 +195,7 @@ def get_ui_texts(language):
             "job_example": "例如：\n職位：前端工程師\n要求：\n- 3年以上 React 開發經驗\n- 熟悉 JavaScript, TypeScript\n- 具備團隊協作能力\n- 有產品思維\n...",
             "analyze_button": "開始分析匹配度",
             "analyze_another": "分析另一份職缺",
-            "match_score_label": "匹配度 / 100",
+            "match_score_label": "總體匹配度",
             "priorities_title": "職缺關鍵技能優先級",
             "matched_title": "我符合的經驗",
             "missing_title": "我缺少的經驗",
@@ -234,7 +234,7 @@ def get_ui_texts(language):
             "job_example": "Example:\nPosition: Frontend Engineer\nRequirements:\n- 3+ years React development experience\n- Familiar with JavaScript, TypeScript\n- Team collaboration skills\n- Product mindset\n...",
             "analyze_button": "Start Analysis",
             "analyze_another": "Analyze Another Job",
-            "match_score_label": "Match Score / 100",
+            "match_score_label": "Overall Match Score",
             "priorities_title": "Job Priority Skills",
             "matched_title": "My Matching Experience",
             "missing_title": "Missing Experience",
@@ -273,7 +273,7 @@ def get_ui_texts(language):
             "job_example": "Beispiel:\nPosition: Frontend-Entwickler\nAnforderungen:\n- 3+ Jahre React-Entwicklungserfahrung\n- Kenntnisse in JavaScript, TypeScript\n- Teamfähigkeit\n- Produktdenken\n...",
             "analyze_button": "Analyse starten",
             "analyze_another": "Andere Stelle analysieren",
-            "match_score_label": "Übereinstimmung / 100",
+            "match_score_label": "Gesamtübereinstimmung",
             "priorities_title": "Prioritätsfähigkeiten der Stelle",
             "matched_title": "Meine passende Erfahrung",
             "missing_title": "Fehlende Erfahrung",
@@ -317,16 +317,22 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 2. 職缺最重視的技能與特質（由高到低排序）
 3. 我有的經驗（已符合）- 請為每個經驗項目生成標題和描述
 4. 我缺少的經驗（尚未具備）- 請為每個缺少的項目生成標題和描述
-5. 建議（{language}）- 請以列點方式提供具體建議
+5. 建議（{language}）- 請分類並以列點方式提供具體建議
 
 僅以 JSON 格式回覆：
 
 {{
  "match_score": 0-100,
+ "match_explanation": "匹配度解釋，例如：在5項關鍵技能中符合3項，得分75%",
  "priorities": ["技能A","技能B",...],
+ "priority_scores": {{"技能A": 85, "技能B": 60, "技能C": 90, "技能D": 45, "技能E": 70}},
  "matched": [{{"title": "經驗標題A", "description": "履歷中的具體描述A"}}, {{"title": "經驗標題B", "description": "履歷中的具體描述B"}}],
  "missing": [{{"title": "缺少標題A", "description": "履歷缺少的具體描述A"}}, {{"title": "缺少標題B", "description": "履歷缺少的具體描述B"}}],
- "advice": ["建議1", "建議2", "建議3", ...]
+ "advice": {{
+   "immediate_actions": ["立即行動建議1", "立即行動建議2"],
+   "skill_development": ["技能發展建議1", "技能發展建議2"],
+   "career_guidance": ["職涯指導建議1", "職涯指導建議2"]
+ }}
 }}"""
 
     user_prompt = f"""
@@ -389,20 +395,40 @@ def display_results(result, language="中文"):
     texts = get_ui_texts(language)
     
     # 匹配度分數
+    match_score = result.get('match_score', 0)
+    match_explanation = result.get('match_explanation', '')
+    
     st.markdown(f"""
     <div class="score-container">
-        <h1 class="score-number">{result.get('match_score', 0)}</h1>
+        <h1 class="score-number">{match_score}%</h1>
         <p class="score-label">{texts['match_score_label']}</p>
+        <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">{match_explanation}</p>
     </div>
     """, unsafe_allow_html=True)
     
     # 職缺優先技能
     if 'priorities' in result and result['priorities']:
         st.markdown(f"### {texts['priorities_title']}")
-        priorities_html = ""
-        for i, skill in enumerate(result['priorities'], 1):
-            priorities_html += f'<span class="priority-item">{i}. {skill}</span> '
-        st.markdown(priorities_html, unsafe_allow_html=True)
+        
+        # 顯示技能優先級和匹配度
+        if 'priority_scores' in result and result['priority_scores']:
+            for i, skill in enumerate(result['priorities'], 1):
+                score = result['priority_scores'].get(skill, 0)
+                color = "#28a745" if score >= 70 else "#ffc107" if score >= 50 else "#dc3545"
+                st.markdown(f"""
+                <div style="display: flex; justify-content: space-between; align-items: center; 
+                           background: #f8f9fa; padding: 0.8rem; margin: 0.3rem 0; border-radius: 6px; 
+                           border-left: 3px solid {color};">
+                    <span style="font-weight: 500;">{i}. {skill}</span>
+                    <span style="font-weight: bold; color: {color};">{score}%</span>
+                </div>
+                """, unsafe_allow_html=True)
+        else:
+            # 如果沒有分數，顯示原來的格式
+            priorities_html = ""
+            for i, skill in enumerate(result['priorities'], 1):
+                priorities_html += f'<span class="priority-item">{i}. {skill}</span> '
+            st.markdown(priorities_html, unsafe_allow_html=True)
     
     # 雙欄結果
     col1, col2 = st.columns(2)
@@ -435,9 +461,35 @@ def display_results(result, language="中文"):
     if 'advice' in result and result['advice']:
         st.markdown(f"### {texts['advice_title']}")
         
-        # 處理建議格式（可能是字符串或列表）
         advice_content = result['advice']
-        if isinstance(advice_content, list):
+        
+        # 處理分類建議格式
+        if isinstance(advice_content, dict):
+            advice_html = ""
+            
+            # 立即行動建議
+            if 'immediate_actions' in advice_content and advice_content['immediate_actions']:
+                advice_html += "<h4 style='color: #dc3545; margin-top: 1rem;'>🚀 立即行動</h4><ul>"
+                for item in advice_content['immediate_actions']:
+                    advice_html += f"<li>{item}</li>"
+                advice_html += "</ul>"
+            
+            # 技能發展建議
+            if 'skill_development' in advice_content and advice_content['skill_development']:
+                advice_html += "<h4 style='color: #007bff; margin-top: 1rem;'>📚 技能發展</h4><ul>"
+                for item in advice_content['skill_development']:
+                    advice_html += f"<li>{item}</li>"
+                advice_html += "</ul>"
+            
+            # 職涯指導建議
+            if 'career_guidance' in advice_content and advice_content['career_guidance']:
+                advice_html += "<h4 style='color: #28a745; margin-top: 1rem;'>💡 職涯指導</h4><ul>"
+                for item in advice_content['career_guidance']:
+                    advice_html += f"<li>{item}</li>"
+                advice_html += "</ul>"
+        
+        # 處理舊格式（列表或字符串）
+        elif isinstance(advice_content, list):
             advice_html = "<ul>"
             for item in advice_content:
                 advice_html += f"<li>{item}</li>"
