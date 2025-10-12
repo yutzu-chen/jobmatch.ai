@@ -1,6 +1,6 @@
 import streamlit as st
 import json
-from groq import Groq
+import google.generativeai as genai
 import os
 from dotenv import load_dotenv
 import time
@@ -251,26 +251,27 @@ def get_ui_texts(language):
     }
     return texts.get(language, texts["中文"])
 
-def initialize_groq_client():
-    """初始化 Groq 客戶端"""
-    api_key = os.getenv("GROQ_API_KEY")
+def initialize_gemini_client():
+    """初始化 Google Gemini 客戶端"""
+    api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        st.error("⚠️ 請設置 GROQ_API_KEY 環境變數")
-        st.info("請到 https://console.groq.com/ 申請免費 API key，然後在 .env 文件中設置")
+        st.error("⚠️ 請設置 GOOGLE_API_KEY 環境變數")
+        st.info("請到 https://makersuite.google.com/app/apikey 申請免費 API key，然後在 .env 文件中設置")
         return None
     
     try:
-        client = Groq(api_key=api_key)
-        return client
+        genai.configure(api_key=api_key)
+        model = genai.GenerativeModel('gemini-1.5-flash')
+        return model
     except Exception as e:
-        st.error(f"❌ Groq 客戶端初始化失敗: {str(e)}")
+        st.error(f"❌ Gemini 客戶端初始化失敗: {str(e)}")
         return None
 
 def analyze_resume_job_match(resume_text, job_description, language="中文"):
-    """使用 Groq API 分析履歷與職缺匹配度"""
+    """使用 Google Gemini API 分析履歷與職缺匹配度"""
     
-    client = initialize_groq_client()
-    if not client:
+    model = initialize_gemini_client()
+    if not model:
         return None
     
     # 系統提示詞
@@ -303,18 +304,19 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 """
 
     try:
-        # 創建聊天完成
-        chat_completion = client.chat.completions.create(
-            messages=[
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": user_prompt}
-            ],
-            model="llama-3.3-70b-versatile",
-            temperature=0.3,
-            max_tokens=1000
+        # 創建完整的提示詞
+        full_prompt = f"{system_prompt}\n\n{user_prompt}"
+        
+        # 使用 Gemini 生成回應
+        response = model.generate_content(
+            full_prompt,
+            generation_config=genai.types.GenerationConfig(
+                temperature=0.3,
+                max_output_tokens=1000,
+            )
         )
         
-        response_text = chat_completion.choices[0].message.content
+        response_text = response.text
         
         # 嘗試解析 JSON
         try:

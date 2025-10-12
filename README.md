@@ -29,10 +29,10 @@ pip install -r requirements.txt
 ```
 
 #### 2. 設置 API Key
-1. 到 [Groq Console](https://console.groq.com/) 申請免費 API key
+1. 到 [Google AI Studio](https://makersuite.google.com/app/apikey) 申請免費 API key
 2. 創建 `.env` 文件並設置：
 ```
-GROQ_API_KEY=your_groq_api_key_here
+GOOGLE_API_KEY=your_google_api_key_here
 ```
 
 #### 3. 運行應用
