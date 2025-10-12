@@ -172,7 +172,7 @@ def get_ui_texts(language):
     texts = {
         "中文": {
             "app_title": "JobMatch.AI",
-            "app_subtitle": "AI 履歷職缺匹配分析工具 - 讓你知道自己強在哪、還差什麼",
+            "app_subtitle": "看見你的強項，精準補齊差距：30 秒搞懂這份職缺適不適合你",
             "settings_title": "設置",
             "language_label": "分析語言",
             "instructions_title": "使用說明",
@@ -194,7 +194,7 @@ def get_ui_texts(language):
             "job_title": "職缺描述",
             "job_placeholder": "請貼上職缺描述（Job Description）",
             "job_example": "例如：\n職位：前端工程師\n要求：\n- 3年以上 React 開發經驗\n- 熟悉 JavaScript, TypeScript\n- 具備團隊協作能力\n- 有產品思維\n...",
-            "analyze_button": "開始分析匹配度",
+            "analyze_button": "開始分析",
             "analyze_another": "分析另一份職缺",
             "match_score_label": "總體匹配度",
             "priorities_title": "職缺關鍵技能",
@@ -211,7 +211,7 @@ def get_ui_texts(language):
         },
         "English": {
             "app_title": "JobMatch.AI",
-            "app_subtitle": "AI Resume-Job Matching Analysis Tool - Know your strengths and gaps",
+            "app_subtitle": "See your strengths, bridge the gaps: 30 seconds to know if this job fits you",
             "settings_title": "Settings",
             "language_label": "Analysis Language",
             "instructions_title": "Instructions",
@@ -274,36 +274,23 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
         return None
     
     # 系統提示詞
-    system_prompt = f"""你是專業職涯顧問。請幫我分析使用者的履歷和職缺內容，並提供：
-1. 總體匹配度（0–100）
-2. 職缺最重視的技能與特質（由高到低排序）
-3. 我有的經驗（已符合）- 請為每個經驗項目生成標題和描述
-4. 我缺少的經驗（尚未具備）- 請為每個缺少的項目生成標題和描述
-5. 建議（{language}）- 請分類並以列點方式提供具體建議
-
-重要要求：
-- 所有文字必須使用{language}，保持語言一致性
-- 技能分數基於履歷中相關經驗的深度和相關性評分
-- 建議內容不要重複標題文字，直接提供具體行動建議
-- 建議必須具體且可執行，包含具體的學習資源、工具、平台或行動步驟
-- 避免籠統的建議，要提供明確的下一步行動
-
-僅以 JSON 格式回覆：
+    system_prompt = f"""你是專業職涯顧問。請閱讀【履歷】與【職缺】，並 ONLY 以 JSON 回覆，符合下列 schema：
 
 {{
- "match_score": 0-100,
- "match_explanation": "匹配度解釋，例如：在5項關鍵技能中符合3項，得分75%",
- "priorities": ["技能A","技能B",...],
- "priority_scores": {{"技能A": 85, "技能B": 60, "技能C": 90, "技能D": 45, "技能E": 70}},
- "score_explanation": "技能分數基於履歷中相關經驗的深度和相關性，90-100分表示經驗豐富，70-89分表示有一定經驗，50-69分表示基礎經驗，50分以下表示經驗不足",
- "matched": [{{"title": "經驗標題A", "description": "履歷中的具體描述A"}}, {{"title": "經驗標題B", "description": "履歷中的具體描述B"}}],
- "missing": [{{"title": "缺少標題A", "description": "履歷缺少的具體描述A"}}, {{"title": "缺少標題B", "description": "履歷缺少的具體描述B"}}],
- "advice": {{
-   "immediate_actions": ["在履歷中補充具體的數據分析項目經驗，如使用Python分析用戶行為數據", "在LinkedIn上關注相關行業專家，學習最新的產品管理趨勢"],
-   "skill_development": ["完成Coursera的Google Data Analytics證書課程，預計3個月", "學習Figma設計工具，完成至少2個UI/UX設計項目"],
-   "career_guidance": ["申請產品經理實習職位，累積實際產品開發經驗", "參加產品管理社群活動，建立行業人脈網絡"]
- }}
-}}"""
+  "match_score": 整數0-100,
+  "confidence": 浮點0-1,
+  "priorities": [{{"name":字串,"weight":0-1}}],
+  "matched": [{{"item":字串,"evidence":[字串...]}}],
+  "missing": [{{"item":字串,"action":字串}}],
+  "advice": 字串(3-5句)
+}}
+
+規則：
+- 所有回應文字必須使用{language}
+- priorities 依 JD 語義排序（設計系統、Web框架、AI in UI、跨平台協作、溝通/對齊...）
+- matched/missing 需以履歷/職缺原文為佐證（給 evidence）
+- advice 語氣自然，給可落地的一週行動
+- 僅回 JSON，不要其他文字"""
 
     user_prompt = f"""
 履歷內容：
@@ -366,13 +353,25 @@ def display_results(result, language="中文"):
     
     # 匹配度分數
     match_score = result.get('match_score', 0)
-    match_explanation = result.get('match_explanation', '')
+    confidence = result.get('confidence', 0)
+    
+    # 計算信心指標
+    confidence_text = ""
+    if confidence >= 0.8:
+        confidence_text = "高信心度"
+        confidence_color = "#28a745"
+    elif confidence >= 0.6:
+        confidence_text = "中等信心度"
+        confidence_color = "#ffc107"
+    else:
+        confidence_text = "低信心度"
+        confidence_color = "#dc3545"
     
     st.markdown(f"""
     <div class="score-container">
         <h1 class="score-number">{match_score}%</h1>
         <p class="score-label">{texts['match_score_label']}</p>
-        <p style="font-size: 0.9rem; margin-top: 0.5rem; opacity: 0.8;">{match_explanation}</p>
+        <p style="font-size: 0.9rem; margin-top: 0.5rem; color: {confidence_color}; font-weight: 500;">{confidence_text}</p>
     </div>
     """, unsafe_allow_html=True)
     
@@ -384,25 +383,25 @@ def display_results(result, language="中文"):
         if 'score_explanation' in result and result['score_explanation']:
             st.markdown(f"<p style='font-size: 0.9rem; color: #666; margin-bottom: 1rem;'>{result['score_explanation']}</p>", unsafe_allow_html=True)
         
-        # 顯示技能和匹配度
-        if 'priority_scores' in result and result['priority_scores']:
-            for i, skill in enumerate(result['priorities'], 1):
-                score = result['priority_scores'].get(skill, 0)
-                color = "#28a745" if score >= 70 else "#ffc107" if score >= 50 else "#dc3545"
+        # 顯示技能和權重
+        for i, priority in enumerate(result['priorities'], 1):
+            if isinstance(priority, dict):
+                name = priority.get('name', '')
+                weight = priority.get('weight', 0)
+                weight_percent = int(weight * 100)
+                color = "#28a745" if weight >= 0.7 else "#ffc107" if weight >= 0.5 else "#dc3545"
+                
                 st.markdown(f"""
                 <div style="display: flex; justify-content: space-between; align-items: center; 
                            background: #f8f9fa; padding: 0.8rem; margin: 0.3rem 0; border-radius: 6px; 
                            border-left: 3px solid {color};">
-                    <span style="font-weight: 500;">{i}. {skill}</span>
-                    <span style="font-weight: bold; color: {color};">{score}%</span>
+                    <span style="font-weight: 500;">{i}. {name}</span>
+                    <span style="font-weight: bold; color: {color};">{weight_percent}%</span>
                 </div>
                 """, unsafe_allow_html=True)
-        else:
-            # 如果沒有分數，顯示原來的格式
-            priorities_html = ""
-            for i, skill in enumerate(result['priorities'], 1):
-                priorities_html += f'<span class="priority-item">{i}. {skill}</span> '
-            st.markdown(priorities_html, unsafe_allow_html=True)
+            else:
+                # 兼容舊格式
+                st.markdown(f"<div class='priority-item'>{i}. {priority}</div>", unsafe_allow_html=True)
     
     # 雙欄結果
     col1, col2 = st.columns(2)
@@ -411,8 +410,16 @@ def display_results(result, language="中文"):
         st.markdown(f"### {texts['matched_title']}")
         if 'matched' in result and result['matched']:
             for item in result['matched']:
-                # 處理新格式（有標題和描述）或舊格式（只有描述）
-                if isinstance(item, dict) and 'title' in item and 'description' in item:
+                # 處理新格式（有item和evidence）或舊格式
+                if isinstance(item, dict) and 'item' in item and 'evidence' in item:
+                    evidence_text = "、".join(item['evidence'][:2])  # 只顯示前2個證據
+                    st.markdown(f'''
+                    <div class="matched-item">
+                        <strong>{item["item"]}</strong><br>
+                        <small style="color: #666; font-style: italic;">來自履歷：{evidence_text}</small>
+                    </div>
+                    ''', unsafe_allow_html=True)
+                elif isinstance(item, dict) and 'title' in item and 'description' in item:
                     st.markdown(f'<div class="matched-item"><strong>{item["title"]}</strong><br>{item["description"]}</div>', unsafe_allow_html=True)
                 else:
                     st.markdown(f'<div class="matched-item">{item}</div>', unsafe_allow_html=True)
@@ -423,8 +430,15 @@ def display_results(result, language="中文"):
         st.markdown(f"### {texts['missing_title']}")
         if 'missing' in result and result['missing']:
             for item in result['missing']:
-                # 處理新格式（有標題和描述）或舊格式（只有描述）
-                if isinstance(item, dict) and 'title' in item and 'description' in item:
+                # 處理新格式（有item和action）或舊格式
+                if isinstance(item, dict) and 'item' in item and 'action' in item:
+                    st.markdown(f'''
+                    <div class="missing-item">
+                        <strong>{item["item"]}</strong><br>
+                        <small style="color: #666; font-style: italic;">建議行動：{item["action"]}</small>
+                    </div>
+                    ''', unsafe_allow_html=True)
+                elif isinstance(item, dict) and 'title' in item and 'description' in item:
                     st.markdown(f'<div class="missing-item"><strong>{item["title"]}</strong><br>{item["description"]}</div>', unsafe_allow_html=True)
                 else:
                     st.markdown(f'<div class="missing-item">{item}</div>', unsafe_allow_html=True)
@@ -437,45 +451,44 @@ def display_results(result, language="中文"):
         
         advice_content = result['advice']
         
-        # 處理分類建議格式
-        if isinstance(advice_content, dict):
+        # 處理新格式（字符串）或舊格式（字典/列表）
+        if isinstance(advice_content, str):
+            # 新格式：直接顯示字符串建議
+            advice_html = advice_content
+        elif isinstance(advice_content, dict):
+            # 舊格式：處理分類建議
             advice_html = ""
             
             # 立即行動建議
             if 'immediate_actions' in advice_content and advice_content['immediate_actions']:
-                advice_html += "<h4 style='color: #dc3545; margin-top: 1rem;'>🚀 立即行動</h4><ul>"
+                advice_html += "<h4 style='color: #dc3545; margin-top: 1rem;'>立即行動</h4><ul>"
                 for item in advice_content['immediate_actions']:
-                    # 移除重複的標題文字
                     clean_item = item.replace("立即行動：", "").replace("立即行動:", "").strip()
                     advice_html += f"<li>{clean_item}</li>"
                 advice_html += "</ul>"
             
             # 技能發展建議
             if 'skill_development' in advice_content and advice_content['skill_development']:
-                advice_html += "<h4 style='color: #007bff; margin-top: 1rem;'>📚 技能發展</h4><ul>"
+                advice_html += "<h4 style='color: #007bff; margin-top: 1rem;'>技能發展</h4><ul>"
                 for item in advice_content['skill_development']:
-                    # 移除重複的標題文字
                     clean_item = item.replace("技能發展：", "").replace("技能發展:", "").replace("技能提升：", "").replace("技能提升:", "").strip()
                     advice_html += f"<li>{clean_item}</li>"
                 advice_html += "</ul>"
             
             # 職涯指導建議
             if 'career_guidance' in advice_content and advice_content['career_guidance']:
-                advice_html += "<h4 style='color: #28a745; margin-top: 1rem;'>💡 職涯指導</h4><ul>"
+                advice_html += "<h4 style='color: #28a745; margin-top: 1rem;'>職涯指導</h4><ul>"
                 for item in advice_content['career_guidance']:
-                    # 移除重複的標題文字
                     clean_item = item.replace("職涯指導：", "").replace("職涯指導:", "").replace("職涯發展：", "").replace("職涯發展:", "").strip()
                     advice_html += f"<li>{clean_item}</li>"
                 advice_html += "</ul>"
-        
-        # 處理舊格式（列表或字符串）
         elif isinstance(advice_content, list):
             advice_html = "<ul>"
             for item in advice_content:
                 advice_html += f"<li>{item}</li>"
             advice_html += "</ul>"
         else:
-            advice_html = advice_content
+            advice_html = str(advice_content)
         
         st.markdown(f'<div class="advice-box">{advice_html}</div>', unsafe_allow_html=True)
 
