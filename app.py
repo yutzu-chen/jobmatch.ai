@@ -716,16 +716,17 @@ def main():
             result = analyze_resume_job_match(resume_text, job_description, language)
         
         if result:
-            st.success(texts['analysis_complete'])
-            # 使用檢測到的語言來顯示結果
+            # 使用檢測到的語言來顯示結果和 UI
             display_language = result.get('detected_language', language)
+            display_texts = get_ui_texts(display_language)
+            st.success(display_texts['analysis_complete'])
             display_results(result, display_language)
             
             # 重新分析按鈕
             st.markdown("<br>", unsafe_allow_html=True)
             col_new1, col_new2, col_new3 = st.columns([1, 2, 1])
             with col_new2:
-                if st.button(texts['analyze_another'], use_container_width=True):
+                if st.button(display_texts['analyze_another'], use_container_width=True):
                     st.rerun()
         else:
             st.error(texts['analysis_failed'])
