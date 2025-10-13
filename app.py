@@ -332,7 +332,7 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 - 所有回應文字必須使用{language}
          - match_explanation：必須解釋為什麼是這個分數，例如「在5項關鍵技能中符合3項，得分75%」。如果經驗年數不足，必須明確說明並降低分數
          - priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣。如果職缺要求特定年數經驗，必須嚴格按照年數規則給分（例如：要求8年但只有3年，只能給30-50%），不能因為有相關經驗就給高分！經驗年數評估規則優先於技能匹配規則！但如果職缺沒有明確年數要求，則按照技能匹配規則給分（履歷明確提到相關經驗就給70-90%）！重要：如果經驗年數符合或超過要求，必須給高分（90-100%），不能給低分！如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
-- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當；不用寫「來自履歷」
+- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當；不用寫「來自履歷」或「因此給予權重」
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
          - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
            * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
@@ -345,21 +345,19 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 特別注意：
 1. priorities 中的技能必須是職缺描述中明確提及或要求的技能，不能因為履歷中有相關經驗就加入職缺關鍵技能中！
 2. 經驗年數評估規則：
+   - 只有當職缺有提到此年數要求才需要考慮此規則
    - 如果職缺要求 X 年經驗，履歷只有 Y 年經驗：
      * Y >= X：給 90-100%（經驗充足或超過要求）
      * Y >= X*0.8：給 70-85%（經驗接近要求）
      * Y >= X*0.6：給 50-70%（經驗不足但可接受）
      * Y < X*0.6：給 30-50%（經驗嚴重不足）
    - 必須在 explanation 中明確說明年數差距對分數的影響
-   - 重要：如果經驗年數符合或超過要求，必須給高分（90-100%），不能給低分！
 3. 技能匹配評估規則：
    - 履歷明確提到相關經驗：給 70-90%
    - 履歷有相關但描述較少：給 50-70%
    - 履歷沒有明確提到：給 20-40%
    - 不要過於保守，如果履歷中有相關經驗就應該給合理的高分
-   - 重要：如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
-4. 重要：經驗年數評估規則優先於技能匹配規則！如果年數不足，必須嚴格按照年數規則給分，不能因為有相關經驗就給高分！
-5. 例外：如果職缺沒有明確要求特定年數經驗，則按照技能匹配規則給分。例如「產品發布經驗」如果沒有年數要求，履歷明確提到就應該給70-90%！"""
+   - 重要：如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！"""
 
     user_prompt = f"""
 履歷內容：
@@ -407,6 +405,14 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
             else:
                 json_text = response_text.strip()
             
+            # 清理無效的控制字符
+            import re
+            # 移除或替換無效的控制字符（除了 \n, \r, \t）
+            json_text = re.sub(r'[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]', '', json_text)
+            # 確保引號正確配對
+            json_text = json_text.replace('"', '"').replace('"', '"')
+            json_text = json_text.replace(''', "'").replace(''', "'")
+            
             # 檢查提取的 JSON 是否為空
             if not json_text:
                 st.error("❌ 無法從 AI 回應中提取 JSON 內容")
@@ -441,6 +447,11 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
                 elif '"missing"' in json_text and not json_text.strip().endswith("}"):
                     json_text = json_text.rstrip() + '}'
                 elif '"matched"' in json_text and not json_text.strip().endswith("}"):
+                    json_text = json_text.rstrip() + '}'
+                elif '"priorities"' in json_text and not json_text.strip().endswith("}"):
+                    # 如果截斷在 priorities 部分，嘗試補全
+                    if json_text.count("[") > json_text.count("]"):
+                        json_text = json_text.rstrip() + ']'
                     json_text = json_text.rstrip() + '}'
             
             result = json.loads(json_text)
