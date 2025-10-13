@@ -139,7 +139,7 @@ st.markdown("""
     }
     
     .stSelectbox > div > div > select {
-        font-size: 0.8rem !important;
+        font-size: 0.9rem !important;
         padding: 0.3rem 0.5rem !important;
         height: 2rem !important;
     }
@@ -542,7 +542,8 @@ def display_results(result, language="中文"):
         
         # 顯示技能分數解釋
         if 'score_explanation' in result and result['score_explanation']:
-            st.markdown(f"<p style='font-size: 0.9rem; color: #666; margin-bottom: 1rem;'>{result['score_explanation']}</p>", unsafe_allow_html=True)
+            explanation_font_size = "1.0rem" if language == "English" else "0.9rem"
+            st.markdown(f"<p style='font-size: {explanation_font_size}; color: #666; margin-bottom: 1rem;'>{result['score_explanation']}</p>", unsafe_allow_html=True)
         
         # 顯示技能和權重
         for i, priority in enumerate(result['priorities'], 1):
@@ -560,7 +561,7 @@ def display_results(result, language="中文"):
                         <span style="font-weight: 500;">{i}. {name}</span>
                         <span style="font-weight: bold; color: {color};">{weight_percent}%</span>
                     </div>
-                    <small style="color: #666; font-size: 0.8rem;">{explanation}</small>
+                    <small style="color: #666; font-size: {'0.9rem' if language == 'English' else '0.8rem'};">{explanation}</small>
                 </div>
                 """, unsafe_allow_html=True)
             else:
