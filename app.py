@@ -653,13 +653,13 @@ def display_results(result, language="中文"):
                         clean_item = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', str(item))
                         clean_item = clean_item.replace("*", "").strip()
                         
-                        # 檢查是否為子標題（包含冒號且長度較短）
-                        if ":" in clean_item and len(clean_item) < 100:
+                        # 檢查是否為子標題（包含冒號且長度較短，且不是資源列表）
+                        if ":" in clean_item and len(clean_item) < 100 and not any(keyword in clean_item.lower() for keyword in ["coursera", "edx", "google", "udacity", "resources", "courses"]):
                             # 這是子標題，使用較大的字體和粗體
                             advice_html += f"<div style='font-weight: 600; margin: 0.8rem 0 0.3rem 0; color: #333; font-size: 1.1rem;'>{clean_item}</div>"
                         else:
-                            # 這是普通項目，使用縮進和邊框
-                            advice_html += f"<div style='margin: 0.3rem 0 0.3rem 1rem; padding-left: 0.5rem; border-left: 2px solid {color}; line-height: 1.6;'>{clean_item}</div>"
+                            # 這是普通項目，使用 bullet points
+                            advice_html += f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; position: relative; line-height: 1.6;'><span style='position: absolute; left: 0; color: {color}; font-weight: bold;'>•</span>{clean_item}</div>"
         elif isinstance(advice_content, str):
             # 字符串格式：直接顯示
             advice_html = advice_content
