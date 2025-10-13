@@ -14,7 +14,7 @@ st.set_page_config(
     page_title="JobMatch.AI - AI 履歷職缺匹配分析工具",
     page_icon="💼",
     layout="wide",
-    initial_sidebar_state="expanded"
+    initial_sidebar_state="collapsed"
 )
 
 # 自定義 CSS 樣式 - 簡約風格
@@ -740,121 +740,36 @@ def main():
 if __name__ == "__main__":
     main()
     
-    # 添加 Safari 兼容的 JavaScript 來處理語言偵測
-    st.markdown("""
-    <script>
-    // Safari 兼容的語言偵測函數
-    function setLanguage() {
-        try {
-            // Safari 兼容的語言檢測
-            var browserLang = navigator.language || navigator.userLanguage || 'en';
-            var isChinese = browserLang.indexOf('zh') === 0;
-            
-            // Safari 兼容的選擇器
-            var selectors = [
-                '[data-testid="stSelectbox"] select',
-                'select[aria-label*="語言"]',
-                'select[aria-label*="Language"]',
-                '.stSelectbox select',
-                'select'
-            ];
-            
-            for (var i = 0; i < selectors.length; i++) {
-                var selectbox = document.querySelector(selectors[i]);
-                if (selectbox && selectbox.options && selectbox.options.length >= 2) {
-                    // 根據瀏覽器語言設置預設選擇
-                    if (isChinese) {
-                        selectbox.selectedIndex = 0; // 中文
-                    } else {
-                        selectbox.selectedIndex = 1; // 英文
-                    }
-                    
-                    // Safari 兼容的事件觸發
-                    try {
-                        var changeEvent = document.createEvent('Event');
-                        changeEvent.initEvent('change', true, true);
-                        selectbox.dispatchEvent(changeEvent);
-                        
-                        var inputEvent = document.createEvent('Event');
-                        inputEvent.initEvent('input', true, true);
-                        selectbox.dispatchEvent(inputEvent);
-                    } catch (e) {
-                        // 如果 createEvent 失敗，嘗試現代方法
-                        try {
-                            selectbox.dispatchEvent(new Event('change', { bubbles: true }));
-                            selectbox.dispatchEvent(new Event('input', { bubbles: true }));
-                        } catch (e2) {
-                            // 忽略事件觸發錯誤
-                        }
-                    }
-                    break;
-                }
-            }
-        } catch (e) {
-            // 忽略所有錯誤，確保不影響頁面功能
-        }
-    }
-    
-    // Safari 兼容的執行方式
-    function safeExecute() {
-        try {
-            setLanguage();
-        } catch (e) {
-            // 忽略錯誤
-        }
-    }
-    
-    // 立即執行
-    safeExecute();
-    
-    // 頁面加載完成後執行
-    if (window.addEventListener) {
-        window.addEventListener('load', safeExecute, false);
-    } else if (window.attachEvent) {
-        window.attachEvent('onload', safeExecute);
-    }
-    
-    // DOM 內容加載完成後也執行
-    if (document.addEventListener) {
-        document.addEventListener('DOMContentLoaded', safeExecute, false);
-    } else if (document.attachEvent) {
-        document.attachEvent('onreadystatechange', function() {
-            if (document.readyState === 'complete') {
-                safeExecute();
-            }
-        });
-    }
-    
-    // Safari 兼容的 MutationObserver
-    if (window.MutationObserver) {
-        try {
-            var observer = new MutationObserver(function(mutations) {
-                for (var i = 0; i < mutations.length; i++) {
-                    if (mutations[i].type === 'childList') {
-                        safeExecute();
-                        break;
-                    }
-                }
-            });
-            
-            observer.observe(document.body, {
-                childList: true,
-                subtree: true
-            });
-        } catch (e) {
-            // 忽略 MutationObserver 錯誤
-        }
-    }
-    
-    // 備用方案：定期檢查
-    var checkCount = 0;
-    var maxChecks = 10;
-    var checkInterval = setInterval(function() {
-        checkCount++;
-        safeExecute();
-        if (checkCount >= maxChecks) {
-            clearInterval(checkInterval);
-        }
-    }, 1000);
-    </script>
-    """, unsafe_allow_html=True)
+    # 暫時移除 JavaScript 來測試 Safari 兼容性
+    # st.markdown("""
+    # <script>
+    # // 極簡的 Safari 兼容語言偵測
+    # function setLanguage() {
+    #     try {
+    #         var browserLang = navigator.language || 'en';
+    #         var isChinese = browserLang.indexOf('zh') === 0;
+    #         
+    #         // 簡單的選擇器
+    #         var selectbox = document.querySelector('select');
+    #         if (selectbox && selectbox.options && selectbox.options.length >= 2) {
+    #             if (isChinese) {
+    #                 selectbox.selectedIndex = 0;
+    #             } else {
+    #                 selectbox.selectedIndex = 1;
+    #             }
+    #         }
+    #     } catch (e) {
+    #         // 忽略錯誤
+    #     }
+    # }
+    # 
+    # // 簡單的執行方式
+    # if (document.readyState === 'loading') {
+    #     document.addEventListener('DOMContentLoaded', setLanguage);
+    # } else {
+    #     setLanguage();
+    # }
+    # 
+    # window.addEventListener('load', setLanguage);
+    # </script>
+    # """, unsafe_allow_html=True)
