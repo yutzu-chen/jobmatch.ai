@@ -305,15 +305,17 @@ def initialize_gemini_client():
 
 def detect_language(text):
     """檢測文本的主要語言"""
-    # 簡單的語言檢測邏輯
+    # 更準確的語言檢測邏輯
     chinese_chars = len([c for c in text if '\u4e00' <= c <= '\u9fff'])
-    total_chars = len([c for c in text if c.isalpha() or '\u4e00' <= c <= '\u9fff'])
+    english_chars = len([c for c in text if c.isalpha() and ord(c) < 128])
+    total_chars = chinese_chars + english_chars
     
     if total_chars == 0:
-        return "中文"  # 預設
+        return "English"  # 預設英文
     
     chinese_ratio = chinese_chars / total_chars
-    return "中文" if chinese_ratio > 0.3 else "English"
+    # 提高閾值，只有當中文字符佔比超過 50% 時才認為是中文
+    return "中文" if chinese_ratio > 0.5 else "English"
 
 def analyze_resume_job_match(resume_text, job_description, ui_language="中文"):
     """使用 Google Gemini API 分析履歷與職缺匹配度"""
@@ -359,7 +361,7 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 }}
 
 重要規則：
-- 所有回應文字必須使用{detected_language}，不用使用敬語（您）
+- 所有回應文字必須完全使用{detected_language}，不能混合其他語言，不用使用敬語（您）
 - match_explanation：請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣
 - priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣。如果職缺要求特定年數經驗，必須嚴格按照年數規則給分（例如：要求8年但只有3年，只能給30-50%），不能因為有相關經驗就給高分！經驗年數評估規則優先於技能匹配規則！但如果職缺沒有明確年數要求，則按照技能匹配規則給分（履歷明確提到相關經驗就給70-90%）！重要：如果經驗年數符合或超過要求，必須給高分（90-100%），不能給低分！如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
 - matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式描述哪裡有符合、排版恰當，不用寫「因此給予怎樣的權重。」
@@ -392,7 +394,8 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 一致性要求：
 - 相同的履歷和職缺描述必須產生相同的分數和評估結果
 - 使用結構化的評估標準，避免主觀判斷
-- 優先考慮客觀指標（年數、技能匹配度）而非主觀感受"""
+- 優先考慮客觀指標（年數、技能匹配度）而非主觀感受
+- 嚴格遵守語言一致性：所有回應必須完全使用{detected_language}，不能出現任何其他語言"""
 
     user_prompt = f"""
 履歷內容：
