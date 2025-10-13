@@ -314,7 +314,6 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
         st.session_state.analysis_cache = {}
     
     if input_hash in st.session_state.analysis_cache:
-        st.info("使用緩存的分析結果")
         return st.session_state.analysis_cache[input_hash]
     
     model = initialize_gemini_client()
@@ -344,7 +343,7 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 - 所有回應文字必須使用{language}
 - match_explanation：請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣
 - priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣。如果職缺要求特定年數經驗，必須嚴格按照年數規則給分（例如：要求8年但只有3年，只能給30-50%），不能因為有相關經驗就給高分！經驗年數評估規則優先於技能匹配規則！但如果職缺沒有明確年數要求，則按照技能匹配規則給分（履歷明確提到相關經驗就給70-90%）！重要：如果經驗年數符合或超過要求，必須給高分（90-100%），不能給低分！如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
-- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當
+- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當，不用寫「因此給予較高權重。」
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
          - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
            * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
