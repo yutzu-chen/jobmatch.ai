@@ -615,7 +615,7 @@ def main():
     with col1:
         # 根據瀏覽器語言自動選擇預設語言
         default_lang_index = 0  # 預設中文
-        language = st.selectbox("語言 / Language", ["中文", "English"], index=default_lang_index, label_visibility="collapsed")
+        language = st.selectbox("語言 / Language", ["中文", "English"], index=default_lang_index)
     
     # 根據選擇的語言獲取文字
     texts = get_ui_texts(language)
