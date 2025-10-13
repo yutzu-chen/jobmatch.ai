@@ -35,7 +35,7 @@ st.markdown("""
         color: #1a1a1a;
         margin-bottom: 2rem;
         margin-top: 1rem;
-        letter-spacing: -0.02em;
+        /* letter-spacing: -0.02em; Safari 兼容性 */
     }
     
     /* 副標題 */
@@ -57,7 +57,7 @@ st.markdown("""
         text-align: center;
         color: #1a1a1a;
         margin: 2rem 0;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        /* box-shadow: 0 1px 3px rgba(0,0,0,0.1); Safari 兼容性 */
     }
     
     .score-number {
@@ -153,7 +153,7 @@ st.markdown("""
     
     .stTextArea > div > div > textarea:focus {
         border-color: #007bff;
-        box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        /* box-shadow: 0 0 0 2px rgba(0,123,255,0.25); Safari 兼容性 */
     }
     
     /* 按鈕樣式 */
@@ -743,10 +743,5 @@ def main():
 if __name__ == "__main__":
     main()
     
-    # 添加 Safari 兼容性測試
-    st.markdown("""
-    <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 1rem; margin: 1rem 0; font-size: 0.9rem; color: #666;">
-        <strong>📱 Safari 兼容性測試</strong><br>
-        如果你看到這個訊息，表示基本功能正常。如果頁面無法加載，請檢查瀏覽器控制台錯誤。
-    </div>
-    """, unsafe_allow_html=True)
+    # Safari 兼容性測試
+    st.info("📱 Safari 兼容性測試：如果你看到這個訊息，表示基本功能正常。")
