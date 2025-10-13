@@ -740,63 +740,121 @@ def main():
 if __name__ == "__main__":
     main()
     
-    # 添加 JavaScript 來處理語言偵測
+    # 添加 Safari 兼容的 JavaScript 來處理語言偵測
     st.markdown("""
     <script>
-    // 立即執行和延遲執行結合
+    // Safari 兼容的語言偵測函數
     function setLanguage() {
-        const browserLang = navigator.language || navigator.userLanguage;
-        const isChinese = browserLang.startsWith('zh');
-        
-        // 嘗試多種選擇器
-        const selectors = [
-            '[data-testid="stSelectbox"] select',
-            'select[aria-label*="語言"]',
-            'select[aria-label*="Language"]',
-            '.stSelectbox select'
-        ];
-        
-        for (const selector of selectors) {
-            const selectbox = document.querySelector(selector);
-            if (selectbox) {
-                // 根據瀏覽器語言設置預設選擇
-                if (isChinese) {
-                    selectbox.selectedIndex = 0; // 中文
-                } else {
-                    selectbox.selectedIndex = 1; // 英文
+        try {
+            // Safari 兼容的語言檢測
+            var browserLang = navigator.language || navigator.userLanguage || 'en';
+            var isChinese = browserLang.indexOf('zh') === 0;
+            
+            // Safari 兼容的選擇器
+            var selectors = [
+                '[data-testid="stSelectbox"] select',
+                'select[aria-label*="語言"]',
+                'select[aria-label*="Language"]',
+                '.stSelectbox select',
+                'select'
+            ];
+            
+            for (var i = 0; i < selectors.length; i++) {
+                var selectbox = document.querySelector(selectors[i]);
+                if (selectbox && selectbox.options && selectbox.options.length >= 2) {
+                    // 根據瀏覽器語言設置預設選擇
+                    if (isChinese) {
+                        selectbox.selectedIndex = 0; // 中文
+                    } else {
+                        selectbox.selectedIndex = 1; // 英文
+                    }
+                    
+                    // Safari 兼容的事件觸發
+                    try {
+                        var changeEvent = document.createEvent('Event');
+                        changeEvent.initEvent('change', true, true);
+                        selectbox.dispatchEvent(changeEvent);
+                        
+                        var inputEvent = document.createEvent('Event');
+                        inputEvent.initEvent('input', true, true);
+                        selectbox.dispatchEvent(inputEvent);
+                    } catch (e) {
+                        // 如果 createEvent 失敗，嘗試現代方法
+                        try {
+                            selectbox.dispatchEvent(new Event('change', { bubbles: true }));
+                            selectbox.dispatchEvent(new Event('input', { bubbles: true }));
+                        } catch (e2) {
+                            // 忽略事件觸發錯誤
+                        }
+                    }
+                    break;
                 }
-                selectbox.dispatchEvent(new Event('change', { bubbles: true }));
-                selectbox.dispatchEvent(new Event('input', { bubbles: true }));
-                break;
             }
+        } catch (e) {
+            // 忽略所有錯誤，確保不影響頁面功能
+        }
+    }
+    
+    // Safari 兼容的執行方式
+    function safeExecute() {
+        try {
+            setLanguage();
+        } catch (e) {
+            // 忽略錯誤
         }
     }
     
     // 立即執行
-    setLanguage();
+    safeExecute();
     
     // 頁面加載完成後執行
-    window.addEventListener('load', function() {
-        setLanguage();
-    });
+    if (window.addEventListener) {
+        window.addEventListener('load', safeExecute, false);
+    } else if (window.attachEvent) {
+        window.attachEvent('onload', safeExecute);
+    }
     
     // DOM 內容加載完成後也執行
-    document.addEventListener('DOMContentLoaded', function() {
-        setLanguage();
-    });
-    
-    // 監聽 Streamlit 的狀態變化
-    const observer = new MutationObserver(function(mutations) {
-        mutations.forEach(function(mutation) {
-            if (mutation.type === 'childList') {
-                setLanguage();
+    if (document.addEventListener) {
+        document.addEventListener('DOMContentLoaded', safeExecute, false);
+    } else if (document.attachEvent) {
+        document.attachEvent('onreadystatechange', function() {
+            if (document.readyState === 'complete') {
+                safeExecute();
             }
         });
-    });
+    }
     
-    observer.observe(document.body, {
-        childList: true,
-        subtree: true
-    });
+    // Safari 兼容的 MutationObserver
+    if (window.MutationObserver) {
+        try {
+            var observer = new MutationObserver(function(mutations) {
+                for (var i = 0; i < mutations.length; i++) {
+                    if (mutations[i].type === 'childList') {
+                        safeExecute();
+                        break;
+                    }
+                }
+            });
+            
+            observer.observe(document.body, {
+                childList: true,
+                subtree: true
+            });
+        } catch (e) {
+            // 忽略 MutationObserver 錯誤
+        }
+    }
+    
+    // 備用方案：定期檢查
+    var checkCount = 0;
+    var maxChecks = 10;
+    var checkInterval = setInterval(function() {
+        checkCount++;
+        safeExecute();
+        if (checkCount >= maxChecks) {
+            clearInterval(checkInterval);
+        }
+    }, 1000);
     </script>
     """, unsafe_allow_html=True)
