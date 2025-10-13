@@ -552,9 +552,10 @@ def display_results(result, language="中文"):
                 st.markdown(f"""
                 <div style="background: #f8f9fa; padding: 0.8rem; margin: 0.3rem 0; border-radius: 6px; 
                            border-left: 3px solid {color};">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.3rem;">
+                    <div style="margin-bottom: 0.3rem;">
                         <span style="font-weight: 500;">{i}. {name}</span>
-                        <span style="font-weight: bold; color: {color};">{weight_percent}%</span>
+                        <span style="font-weight: bold; color: {color}; float: right;">{weight_percent}%</span>
+                        <div style="clear: both;"></div>
                     </div>
                     <small style="color: #666; font-size: {'0.9rem' if language == 'English' else '0.8rem'};">{explanation}</small>
                 </div>
@@ -654,8 +655,8 @@ def display_results(result, language="中文"):
                             # 這是子標題，使用較大的字體和粗體
                             advice_html += f"<div style='font-weight: 600; margin: 0.8rem 0 0.3rem 0; color: #333; font-size: 1.1rem;'>{clean_item}</div>"
                         else:
-                            # 所有其他項目都使用 bullet points
-                            advice_html += f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; position: relative; line-height: 1.6;'><span style='position: absolute; left: 0; color: {color}; font-weight: bold;'>•</span>{clean_item}</div>"
+                            # 所有其他項目都使用 bullet points (Safari 兼容)
+                            advice_html += f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; line-height: 1.6;'><span style='color: {color}; font-weight: bold; margin-right: 0.5rem;'>•</span>{clean_item}</div>"
         elif isinstance(advice_content, str):
             # 字符串格式：直接顯示
             advice_html = advice_content
@@ -742,36 +743,10 @@ def main():
 if __name__ == "__main__":
     main()
     
-    # 暫時移除 JavaScript 來測試 Safari 兼容性
-    # st.markdown("""
-    # <script>
-    # // 極簡的 Safari 兼容語言偵測
-    # function setLanguage() {
-    #     try {
-    #         var browserLang = navigator.language || 'en';
-    #         var isChinese = browserLang.indexOf('zh') === 0;
-    #         
-    #         // 簡單的選擇器
-    #         var selectbox = document.querySelector('select');
-    #         if (selectbox && selectbox.options && selectbox.options.length >= 2) {
-    #             if (isChinese) {
-    #                 selectbox.selectedIndex = 0;
-    #             } else {
-    #                 selectbox.selectedIndex = 1;
-    #             }
-    #         }
-    #     } catch (e) {
-    #         // 忽略錯誤
-    #     }
-    # }
-    # 
-    # // 簡單的執行方式
-    # if (document.readyState === 'loading') {
-    #     document.addEventListener('DOMContentLoaded', setLanguage);
-    # } else {
-    #     setLanguage();
-    # }
-    # 
-    # window.addEventListener('load', setLanguage);
-    # </script>
-    # """, unsafe_allow_html=True)
+    # 添加 Safari 兼容性測試
+    st.markdown("""
+    <div style="background: #f8f9fa; border: 1px solid #e9ecef; border-radius: 6px; padding: 1rem; margin: 1rem 0; font-size: 0.9rem; color: #666;">
+        <strong>📱 Safari 兼容性測試</strong><br>
+        如果你看到這個訊息，表示基本功能正常。如果頁面無法加載，請檢查瀏覽器控制台錯誤。
+    </div>
+    """, unsafe_allow_html=True)
