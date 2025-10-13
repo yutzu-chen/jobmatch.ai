@@ -303,11 +303,30 @@ def initialize_gemini_client():
         st.error(f"❌ Gemini 客戶端初始化失敗: {str(e)}")
         return None
 
-def analyze_resume_job_match(resume_text, job_description, language="中文"):
+def detect_language(text):
+    """檢測文本的主要語言"""
+    # 簡單的語言檢測邏輯
+    chinese_chars = len([c for c in text if '\u4e00' <= c <= '\u9fff'])
+    total_chars = len([c for c in text if c.isalpha() or '\u4e00' <= c <= '\u9fff'])
+    
+    if total_chars == 0:
+        return "中文"  # 預設
+    
+    chinese_ratio = chinese_chars / total_chars
+    return "中文" if chinese_ratio > 0.3 else "English"
+
+def analyze_resume_job_match(resume_text, job_description, ui_language="中文"):
     """使用 Google Gemini API 分析履歷與職缺匹配度"""
     
-    # 創建輸入的哈希值用於緩存
-    input_hash = hashlib.md5(f"{resume_text}_{job_description}_{language}".encode()).hexdigest()
+    # 自動檢測履歷和職缺的語言
+    resume_lang = detect_language(resume_text)
+    job_lang = detect_language(job_description)
+    
+    # 優先使用履歷語言，如果履歷和職缺語言不同，則使用履歷語言
+    detected_language = resume_lang
+    
+    # 創建輸入的哈希值用於緩存（包含檢測到的語言）
+    input_hash = hashlib.md5(f"{resume_text}_{job_description}_{detected_language}".encode()).hexdigest()
     
     # 檢查是否已有緩存結果
     if 'analysis_cache' not in st.session_state:
@@ -326,7 +345,7 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 {{
   "match_score": 整數0-100,
   "confidence": 浮點0-1,
-  "match_explanation": "請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣，並解釋分數來源，例如：在5項關鍵技能中符合3項，得分75%",
+  "match_explanation": "請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣",
   "priorities": [{{"name":字串,"weight":0-1,"explanation":字串}}],
   "matched": [{{"item":字串,"evidence":[字串...]}}],
   "missing": [{{"item":字串,"action":字串}}],
@@ -340,14 +359,14 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 }}
 
 重要規則：
-- 所有回應文字必須使用{language}
+- 所有回應文字必須使用{detected_language}，不用使用敬語（您）
 - match_explanation：請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣
 - priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣。如果職缺要求特定年數經驗，必須嚴格按照年數規則給分（例如：要求8年但只有3年，只能給30-50%），不能因為有相關經驗就給高分！經驗年數評估規則優先於技能匹配規則！但如果職缺沒有明確年數要求，則按照技能匹配規則給分（履歷明確提到相關經驗就給70-90%）！重要：如果經驗年數符合或超過要求，必須給高分（90-100%），不能給低分！如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
-- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當，不用寫「因此給予較高權重。」
+- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式描述哪裡有符合、排版恰當，不用寫「因此給予怎樣的權重。」
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
          - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
            * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
-           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用{language}，自然表達，不用敬語，可以用「你」）
+           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用{detected_language}，自然表達，不用敬語，可以用「你」）
            * 技能差距分析：缺少技能、學習方向、免費資源/課程建議
            * 面試準備建議：潛在問題、回答方向、STAR回答框架提示
            * 作品集建議：小專案題目、展示建議
@@ -473,6 +492,8 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
                     json_text = json_text.rstrip() + '}'
             
             result = json.loads(json_text)
+            # 將檢測到的語言添加到結果中
+            result['detected_language'] = detected_language
             # 將結果存入緩存
             st.session_state.analysis_cache[input_hash] = result
             return result
@@ -696,7 +717,9 @@ def main():
         
         if result:
             st.success(texts['analysis_complete'])
-            display_results(result, language)
+            # 使用檢測到的語言來顯示結果
+            display_language = result.get('detected_language', language)
+            display_results(result, display_language)
             
             # 重新分析按鈕
             st.markdown("<br>", unsafe_allow_html=True)
