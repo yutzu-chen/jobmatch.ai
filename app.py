@@ -258,7 +258,7 @@ def get_ui_texts(language):
                 "Completely free to use"
             ],
             "resume_title": "Resume Content",
-            "resume_placeholder": "Please paste your resume content (supports multiple languages)",
+            "resume_placeholder": "Please paste your resume content",
             "resume_example": "Example:\nName: John Smith\nEducation: Computer Science, MIT\nExperience:\n- 2020-2022 Software Engineer, Frontend Development\n- Proficient in React, JavaScript, Python\n...",
             "job_title": "Job Description",
             "job_placeholder": "Please paste job description",
