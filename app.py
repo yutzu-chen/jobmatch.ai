@@ -2,6 +2,7 @@ import streamlit as st
 import json
 import google.generativeai as genai
 import os
+import hashlib
 from dotenv import load_dotenv
 import time
 
@@ -305,6 +306,17 @@ def initialize_gemini_client():
 def analyze_resume_job_match(resume_text, job_description, language="中文"):
     """使用 Google Gemini API 分析履歷與職缺匹配度"""
     
+    # 創建輸入的哈希值用於緩存
+    input_hash = hashlib.md5(f"{resume_text}_{job_description}_{language}".encode()).hexdigest()
+    
+    # 檢查是否已有緩存結果
+    if 'analysis_cache' not in st.session_state:
+        st.session_state.analysis_cache = {}
+    
+    if input_hash in st.session_state.analysis_cache:
+        st.info("使用緩存的分析結果")
+        return st.session_state.analysis_cache[input_hash]
+    
     model = initialize_gemini_client()
     if not model:
         return None
@@ -315,7 +327,7 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 {{
   "match_score": 整數0-100,
   "confidence": 浮點0-1,
-  "match_explanation": "解釋為什麼是這個分數，例如：在5項關鍵技能中符合3項，得分75%",
+  "match_explanation": "請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣，並解釋分數來源，例如：在5項關鍵技能中符合3項，得分75%",
   "priorities": [{{"name":字串,"weight":0-1,"explanation":字串}}],
   "matched": [{{"item":字串,"evidence":[字串...]}}],
   "missing": [{{"item":字串,"action":字串}}],
@@ -330,9 +342,9 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
 
 重要規則：
 - 所有回應文字必須使用{language}
-         - match_explanation：必須解釋為什麼是這個分數，例如「在5項關鍵技能中符合3項，得分75%」。如果經驗年數不足，必須明確說明並降低分數
-         - priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣。如果職缺要求特定年數經驗，必須嚴格按照年數規則給分（例如：要求8年但只有3年，只能給30-50%），不能因為有相關經驗就給高分！經驗年數評估規則優先於技能匹配規則！但如果職缺沒有明確年數要求，則按照技能匹配規則給分（履歷明確提到相關經驗就給70-90%）！重要：如果經驗年數符合或超過要求，必須給高分（90-100%），不能給低分！如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
-- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當；不用寫「來自履歷」或「因此給予權重」
+- match_explanation：請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣
+- priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣。如果職缺要求特定年數經驗，必須嚴格按照年數規則給分（例如：要求8年但只有3年，只能給30-50%），不能因為有相關經驗就給高分！經驗年數評估規則優先於技能匹配規則！但如果職缺沒有明確年數要求，則按照技能匹配規則給分（履歷明確提到相關經驗就給70-90%）！重要：如果經驗年數符合或超過要求，必須給高分（90-100%），不能給低分！如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
+- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式、排版恰當
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
          - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
            * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
@@ -357,7 +369,12 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
    - 履歷有相關但描述較少：給 50-70%
    - 履歷沒有明確提到：給 20-40%
    - 不要過於保守，如果履歷中有相關經驗就應該給合理的高分
-   - 重要：如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！"""
+   - 重要：如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
+
+一致性要求：
+- 相同的履歷和職缺描述必須產生相同的分數和評估結果
+- 使用結構化的評估標準，避免主觀判斷
+- 優先考慮客觀指標（年數、技能匹配度）而非主觀感受"""
 
     user_prompt = f"""
 履歷內容：
@@ -377,8 +394,10 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
         response = model.generate_content(
             full_prompt,
             generation_config=genai.types.GenerationConfig(
-                temperature=0.3,
+                temperature=0.1,  # 降低溫度以提高一致性
                 max_output_tokens=4000,  # 增加 token 限制以避免截斷
+                top_p=0.8,  # 限制詞彙選擇範圍
+                top_k=20,   # 限制候選詞數量
             )
         )
         
@@ -455,6 +474,8 @@ def analyze_resume_job_match(resume_text, job_description, language="中文"):
                     json_text = json_text.rstrip() + '}'
             
             result = json.loads(json_text)
+            # 將結果存入緩存
+            st.session_state.analysis_cache[input_hash] = result
             return result
             
         except json.JSONDecodeError as e:
