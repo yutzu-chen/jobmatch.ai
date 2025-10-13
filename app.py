@@ -363,7 +363,7 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 重要規則：
 - 所有回應文字必須完全使用{detected_language}，不能混合其他語言，不用使用敬語（您）
 - match_explanation：請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣
-- priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個職缺會不一樣！每個技能要包含explanation說明為何得分是這樣。如果職缺要求特定年數經驗，必須嚴格按照年數規則給分（例如：要求8年但只有3年，只能給30-50%），不能因為有相關經驗就給高分！經驗年數評估規則優先於技能匹配規則！但如果職缺沒有明確年數要求，則按照技能匹配規則給分（履歷明確提到相關經驗就給70-90%）！重要：如果經驗年數符合或超過要求，必須給高分（90-100%），不能給低分！如果履歷明確提到相關經驗，絕對不能給低分（10-30%）！必須給合理的高分！
+- priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個技能要包含explanation說明為何得分是這樣。
 - matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式描述哪裡有符合、排版恰當，不用寫「因此給予怎樣的權重。」
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
          - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
@@ -525,11 +525,14 @@ def display_results(result, language="中文"):
     match_score = result.get('match_score', 0)
     match_explanation = result.get('match_explanation', '')
     
+    # 根據語言調整字體大小
+    font_size = "0.9rem" if language == "English" else "0.85rem"
+    
     st.markdown(f"""
     <div class="score-container">
         <h1 class="score-number">{match_score}%</h1>
         <p class="score-label">{texts['match_score_label']}</p>
-        <p style="font-size: 0.85rem; margin-top: 0.5rem; opacity: 0.8;">{match_explanation}</p>
+        <p style="font-size: {font_size}; margin-top: 0.5rem; opacity: 0.8;">{match_explanation}</p>
     </div>
     """, unsafe_allow_html=True)
     
