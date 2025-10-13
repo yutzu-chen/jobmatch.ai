@@ -337,6 +337,24 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
     if not model:
         return None
     
+    # 根據語言定義建議標題
+    if output_language == "中文":
+        advice_titles = {
+            "resume_optimization": "履歷優化",
+            "cover_letter": "求職信建議", 
+            "skill_gap": "技能差距分析",
+            "interview": "面試準備建議",
+            "portfolio": "作品集建議"
+        }
+    else:
+        advice_titles = {
+            "resume_optimization": "Resume Optimization",
+            "cover_letter": "Cover Letter Suggestions",
+            "skill_gap": "Skill Gap Analysis", 
+            "interview": "Interview Preparation",
+            "portfolio": "Portfolio Suggestions"
+        }
+    
     # 系統提示詞
     system_prompt = """你是專業職涯顧問。請閱讀【履歷】與【職缺】，並 ONLY 以 JSON 回覆，符合下列 schema：
 
@@ -348,11 +366,11 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
   "matched": [{{"item":字串,"evidence":[字串...]}}],
   "missing": [{{"item":字串,"action":字串}}],
   "advice": {{
-    "履歷優化": ["具體的履歷改進建議"],
-    "求職信建議": ["可直接複製的段落模板"],
-    "技能差距分析": ["缺少技能和學習方向"],
-    "面試準備建議": ["潛在問題和回答方向"],
-    "作品集建議": ["具體的專案題目和展示建議"]
+    "{advice_titles['resume_optimization']}": ["具體的履歷改進建議"],
+    "{advice_titles['cover_letter']}": ["可直接複製的段落模板"],
+    "{advice_titles['skill_gap']}": ["缺少技能和學習方向"],
+    "{advice_titles['interview']}": ["潛在問題和回答方向"],
+    "{advice_titles['portfolio']}": ["具體的專案題目和展示建議"]
   }}
 }}
 
@@ -390,7 +408,7 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 - 相同的履歷和職缺描述必須產生相同的分數和評估結果
 - 使用結構化的評估標準，避免主觀判斷
 - 優先考慮客觀指標（年數、技能匹配度）而非主觀感受
-- 嚴格遵守語言一致性：所有回應必須完全使用{language}，不能出現任何其他語言""".format(language=output_language)
+- 嚴格遵守語言一致性：所有回應必須完全使用{language}，不能出現任何其他語言""".format(language=output_language, advice_titles=advice_titles)
 
     user_prompt = f"""
 履歷內容：
@@ -621,18 +639,22 @@ def display_results(result, language="中文"):
             advice_html = ""
             
             # 定義每個類別的顏色和翻譯映射
-            advice_config = {
-                "履歷優化": {"color": "#dc3545", "key": "advice_resume_optimization"},
-                "求職信建議": {"color": "#007bff", "key": "advice_cover_letter"},
-                "技能差距分析": {"color": "#28a745", "key": "advice_skill_gap"},
-                "面試準備建議": {"color": "#6f42c1", "key": "advice_interview"},
-                "作品集建議": {"color": "#fd7e14", "key": "advice_portfolio"},
-                "Resume Optimization": {"color": "#dc3545", "key": "advice_resume_optimization"},
-                "Cover Letter Suggestions": {"color": "#007bff", "key": "advice_cover_letter"},
-                "Skill Gap Analysis": {"color": "#28a745", "key": "advice_skill_gap"},
-                "Interview Preparation": {"color": "#6f42c1", "key": "advice_interview"},
-                "Portfolio Suggestions": {"color": "#fd7e14", "key": "advice_portfolio"}
-            }
+            if language == "中文":
+                advice_config = {
+                    "履歷優化": {"color": "#dc3545", "key": "advice_resume_optimization"},
+                    "求職信建議": {"color": "#007bff", "key": "advice_cover_letter"},
+                    "技能差距分析": {"color": "#28a745", "key": "advice_skill_gap"},
+                    "面試準備建議": {"color": "#6f42c1", "key": "advice_interview"},
+                    "作品集建議": {"color": "#fd7e14", "key": "advice_portfolio"}
+                }
+            else:
+                advice_config = {
+                    "Resume Optimization": {"color": "#dc3545", "key": "advice_resume_optimization"},
+                    "Cover Letter Suggestions": {"color": "#007bff", "key": "advice_cover_letter"},
+                    "Skill Gap Analysis": {"color": "#28a745", "key": "advice_skill_gap"},
+                    "Interview Preparation": {"color": "#6f42c1", "key": "advice_interview"},
+                    "Portfolio Suggestions": {"color": "#fd7e14", "key": "advice_portfolio"}
+                }
             
             for title, items in advice_content.items():
                 if items and len(items) > 0:
