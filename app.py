@@ -682,14 +682,21 @@ if __name__ == "__main__":
     # 添加 JavaScript 來處理語言偵測
     st.markdown("""
     <script>
-    // 頁面加載完成後執行語言偵測
-    window.addEventListener('load', function() {
-        // 語言偵測和設置
-        setTimeout(function() {
-            const browserLang = navigator.language || navigator.userLanguage;
-            const isChinese = browserLang.startsWith('zh');
-            
-            const selectbox = document.querySelector('[data-testid="stSelectbox"] select');
+    // 立即執行和延遲執行結合
+    function setLanguage() {
+        const browserLang = navigator.language || navigator.userLanguage;
+        const isChinese = browserLang.startsWith('zh');
+        
+        // 嘗試多種選擇器
+        const selectors = [
+            '[data-testid="stSelectbox"] select',
+            'select[aria-label*="語言"]',
+            'select[aria-label*="Language"]',
+            '.stSelectbox select'
+        ];
+        
+        for (const selector of selectors) {
+            const selectbox = document.querySelector(selector);
             if (selectbox) {
                 // 根據瀏覽器語言設置預設選擇
                 if (isChinese) {
@@ -698,8 +705,41 @@ if __name__ == "__main__":
                     selectbox.selectedIndex = 1; // 英文
                 }
                 selectbox.dispatchEvent(new Event('change', { bubbles: true }));
+                selectbox.dispatchEvent(new Event('input', { bubbles: true }));
+                break;
             }
-        }, 500);
+        }
+    }
+    
+    // 立即執行
+    setLanguage();
+    
+    // 頁面加載完成後執行
+    window.addEventListener('load', function() {
+        setLanguage();
+        setTimeout(setLanguage, 100);
+        setTimeout(setLanguage, 500);
+        setTimeout(setLanguage, 1000);
+    });
+    
+    // DOM 內容加載完成後也執行
+    document.addEventListener('DOMContentLoaded', function() {
+        setLanguage();
+        setTimeout(setLanguage, 100);
+    });
+    
+    // 監聽 Streamlit 的狀態變化
+    const observer = new MutationObserver(function(mutations) {
+        mutations.forEach(function(mutation) {
+            if (mutation.type === 'childList') {
+                setTimeout(setLanguage, 100);
+            }
+        });
+    });
+    
+    observer.observe(document.body, {
+        childList: true,
+        subtree: true
     });
     </script>
     """, unsafe_allow_html=True)
