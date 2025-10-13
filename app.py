@@ -613,7 +613,9 @@ def main():
     # 語言選擇（放在頁面左上角）
     col1, col2 = st.columns([1, 4])
     with col1:
-        language = st.selectbox("語言", ["中文", "English"], index=0, label_visibility="collapsed")
+        # 根據瀏覽器語言自動選擇預設語言
+        default_lang_index = 0  # 預設中文
+        language = st.selectbox("語言", ["中文", "English"], index=default_lang_index, label_visibility="collapsed")
     
     # 根據選擇的語言獲取文字
     texts = get_ui_texts(language)
@@ -688,12 +690,14 @@ if __name__ == "__main__":
             const isChinese = browserLang.startsWith('zh');
             
             const selectbox = document.querySelector('[data-testid="stSelectbox"] select');
-            if (selectbox && selectbox.selectedIndex === 0) {
-                // 只有在預設選擇中文時才自動切換
-                if (!isChinese) {
-                    selectbox.selectedIndex = 1;
-                    selectbox.dispatchEvent(new Event('change', { bubbles: true }));
+            if (selectbox) {
+                // 根據瀏覽器語言設置預設選擇
+                if (isChinese) {
+                    selectbox.selectedIndex = 0; // 中文
+                } else {
+                    selectbox.selectedIndex = 1; // 英文
                 }
+                selectbox.dispatchEvent(new Event('change', { bubbles: true }));
             }
         }, 500);
     });
