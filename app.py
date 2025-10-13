@@ -10,7 +10,7 @@ load_dotenv()
 
 # 頁面配置
 st.set_page_config(
-    page_title="MatchMe.AI - AI 履歷職缺匹配分析工具",
+    page_title="JobMatch.AI - AI 履歷職缺匹配分析工具",
     page_icon="💼",
     layout="wide",
     initial_sidebar_state="expanded"
