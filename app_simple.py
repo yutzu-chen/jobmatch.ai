@@ -60,9 +60,10 @@ def get_ui_texts(language):
 def initialize_gemini_client():
     """初始化 Gemini 客戶端"""
     try:
-        api_key = os.getenv('GOOGLE_API_KEY')
+        # 優先使用 Hugging Face 環境變數，然後是本地 .env 文件
+        api_key = os.getenv('GOOGLE_API_KEY') or os.getenv('HF_GOOGLE_API_KEY')
         if not api_key:
-            st.error("❌ 請設置 GOOGLE_API_KEY 環境變數")
+            st.error("❌ 請設置 GOOGLE_API_KEY 或 HF_GOOGLE_API_KEY 環境變數")
             return None
         
         genai.configure(api_key=api_key)

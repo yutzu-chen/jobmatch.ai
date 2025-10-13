@@ -1,69 +1,46 @@
-# JobMatch.AI - AI 履歷職缺匹配分析工具
-
-一個使用 AI 分析履歷與職缺匹配度的智能工具，幫助求職者了解自己的優勢和需要改進的地方。
-
-## ✨ 功能特色
-
-- **AI 智能分析**: 使用 Google Gemini 2.0 Flash-Lite 模型進行深度分析
-- **匹配度評分**: 0-100 分的精確匹配度評估
-- **技能優先級**: 識別職缺最重視的技能和特質
-- **優勢分析**: 清楚列出你已具備的經驗
-- **改進建議**: 指出需要補強的能力
-- **多語言支援**: 支援中文、英文分析
-- **隱私保護**: 不保存任何個人資料
-
-## 🚀 使用方式
-
-### 方式 1: 直接使用（推薦）
-直接訪問部署的應用，無需任何設置：
-- 訪問：[部署後的 Streamlit Cloud URL]
-- 貼上履歷和職缺描述
-- 立即獲得 AI 分析結果
-
-### 方式 2: 本地運行
-如果你想在本地運行：
-
-#### 1. 安裝依賴
-```bash
-pip install -r requirements.txt
-```
-
-#### 2. 設置 API Key
-1. 到 [Google AI Studio](https://makersuite.google.com/app/apikey) 申請免費 API key
-2. 創建 `.env` 文件並設置：
-```
-GOOGLE_API_KEY=your_google_api_key_here
-```
-
-#### 3. 運行應用
-```bash
-streamlit run app.py
-```
-
-## 📱 操作步驟
-
-1. 在左側貼上你的履歷內容
-2. 在右側貼上職缺描述
-3. 選擇分析語言
-4. 點擊「開始分析匹配度」
-5. 查看詳細的匹配度分析和建議
-
-## 🛠️ 技術架構
-
-- **前端**: Streamlit
-- **AI 模型**: Google Gemini 2.0 Flash-Lite
-- **語言**: Python 3.8+
-
-## 📦 部署
-
-1. 推送到 GitHub 倉庫
-2. 到 [Streamlit Cloud](https://share.streamlit.io/) 部署
-3. 設置環境變數 `GOOGLE_API_KEY`
-
-## 📄 授權
-
-MIT License
-
+---
+title: JobMatch.AI
+emoji: 💼
+colorFrom: blue
+colorTo: purple
+sdk: streamlit
+sdk_version: 1.28.0
+app_file: app_simple.py
+pinned: false
+license: mit
+short_description: AI-powered job matching tool
 ---
 
-**JobMatch.AI** - 讓 AI 幫你找到理想工作！
+# JobMatch.AI
+
+一个基于 AI 的智能职位匹配工具，帮助求职者分析简历与职位的匹配度。
+
+## 功能特点
+
+- 🤖 使用 Google Gemini AI 进行智能分析
+- 🌍 支持中文和英文界面
+- 📊 提供匹配度评分和详细分析
+- 💼 简洁易用的用户界面
+
+## 使用方法
+
+1. 在左侧输入框中粘贴你的简历内容
+2. 在右侧输入框中粘贴职位描述
+3. 点击"开始分析"按钮
+4. 查看匹配度评分和分析结果
+
+## 环境变量
+
+在 Hugging Face Spaces 中设置以下环境变量：
+
+- `GOOGLE_API_KEY`: 你的 Google AI API 密钥
+
+## 技术栈
+
+- Streamlit: Web 应用框架
+- Google Generative AI: AI 分析引擎
+- Python: 后端语言
+
+## 许可证
+
+MIT License
