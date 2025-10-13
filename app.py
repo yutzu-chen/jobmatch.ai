@@ -778,22 +778,18 @@ if __name__ == "__main__":
     // 頁面加載完成後執行
     window.addEventListener('load', function() {
         setLanguage();
-        setTimeout(setLanguage, 100);
-        setTimeout(setLanguage, 500);
-        setTimeout(setLanguage, 1000);
     });
     
     // DOM 內容加載完成後也執行
     document.addEventListener('DOMContentLoaded', function() {
         setLanguage();
-        setTimeout(setLanguage, 100);
     });
     
     // 監聽 Streamlit 的狀態變化
     const observer = new MutationObserver(function(mutations) {
         mutations.forEach(function(mutation) {
             if (mutation.type === 'childList') {
-                setTimeout(setLanguage, 100);
+                setLanguage();
             }
         });
     });
