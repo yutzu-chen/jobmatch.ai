@@ -320,15 +320,11 @@ def detect_language(text):
 def analyze_resume_job_match(resume_text, job_description, ui_language="中文"):
     """使用 Google Gemini API 分析履歷與職缺匹配度"""
     
-    # 自動檢測履歷和職缺的語言
-    resume_lang = detect_language(resume_text)
-    job_lang = detect_language(job_description)
+    # 直接使用用戶選擇的 UI 語言作為輸出語言
+    output_language = ui_language
     
-    # 優先使用履歷語言，如果履歷和職缺語言不同，則使用履歷語言
-    detected_language = resume_lang
-    
-    # 創建輸入的哈希值用於緩存（包含檢測到的語言）
-    input_hash = hashlib.md5(f"{resume_text}_{job_description}_{detected_language}".encode()).hexdigest()
+    # 創建輸入的哈希值用於緩存（包含輸出語言）
+    input_hash = hashlib.md5(f"{resume_text}_{job_description}_{output_language}".encode()).hexdigest()
     
     # 檢查是否已有緩存結果
     if 'analysis_cache' not in st.session_state:
@@ -394,7 +390,7 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 - 相同的履歷和職缺描述必須產生相同的分數和評估結果
 - 使用結構化的評估標準，避免主觀判斷
 - 優先考慮客觀指標（年數、技能匹配度）而非主觀感受
-- 嚴格遵守語言一致性：所有回應必須完全使用{language}，不能出現任何其他語言""".format(language=detected_language)
+- 嚴格遵守語言一致性：所有回應必須完全使用{language}，不能出現任何其他語言""".format(language=output_language)
 
     user_prompt = f"""
 履歷內容：
@@ -494,8 +490,8 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
                     json_text = json_text.rstrip() + '}'
             
             result = json.loads(json_text)
-            # 將檢測到的語言添加到結果中
-            result['detected_language'] = detected_language
+            # 將輸出語言添加到結果中
+            result['output_language'] = output_language
             # 將結果存入緩存
             st.session_state.analysis_cache[input_hash] = result
             return result
@@ -728,8 +724,8 @@ def main():
             result = analyze_resume_job_match(resume_text, job_description, language)
         
         if result:
-            # 使用檢測到的語言來顯示結果和 UI
-            display_language = result.get('detected_language', language)
+            # 使用用戶選擇的語言來顯示結果和 UI
+            display_language = result.get('output_language', language)
             display_texts = get_ui_texts(display_language)
             st.success(display_texts['analysis_complete'])
             display_results(result, display_language)
