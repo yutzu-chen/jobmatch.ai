@@ -5,7 +5,7 @@ colorFrom: blue
 colorTo: purple
 sdk: streamlit
 sdk_version: 1.28.0
-app_file: app_simple.py
+app_file: app.py
 pinned: false
 license: mit
 short_description: AI-powered job matching tool
