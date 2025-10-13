@@ -645,15 +645,21 @@ def display_results(result, language="中文"):
                     # 使用翻譯後的標題，如果沒有找到則使用原始標題
                     display_title = texts.get(config.get("key", ""), title)
                     
-                    advice_html += f"<div style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 600;'>{display_title}</div><ul style='margin-bottom: 1rem;'>"
+                    advice_html += f"<div style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 600;'>{display_title}</div>"
+                    
+                    # 處理每個建議項目，支持層級結構
                     for item in items:
-                        # 將 **文字** 轉換為 <strong>文字</strong>
                         import re
-                        clean_item = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', item)
-                        # 清理其他 Markdown 格式
+                        clean_item = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', str(item))
                         clean_item = clean_item.replace("*", "").strip()
-                        advice_html += f"<li style='margin: 0.5rem 0; line-height: 1.6;'>{clean_item}</li>"
-                    advice_html += "</ul>"
+                        
+                        # 檢查是否為子標題（包含冒號且長度較短）
+                        if ":" in clean_item and len(clean_item) < 100:
+                            # 這是子標題，使用較大的字體和粗體
+                            advice_html += f"<div style='font-weight: 600; margin: 0.8rem 0 0.3rem 0; color: #333; font-size: 1.1rem;'>{clean_item}</div>"
+                        else:
+                            # 這是普通項目，使用縮進和邊框
+                            advice_html += f"<div style='margin: 0.3rem 0 0.3rem 1rem; padding-left: 0.5rem; border-left: 2px solid {color}; line-height: 1.6;'>{clean_item}</div>"
         elif isinstance(advice_content, str):
             # 字符串格式：直接顯示
             advice_html = advice_content
