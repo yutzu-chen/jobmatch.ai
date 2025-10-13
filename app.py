@@ -342,7 +342,7 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
         return None
     
     # 系統提示詞
-    system_prompt = f"""你是專業職涯顧問。請閱讀【履歷】與【職缺】，並 ONLY 以 JSON 回覆，符合下列 schema：
+    system_prompt = """你是專業職涯顧問。請閱讀【履歷】與【職缺】，並 ONLY 以 JSON 回覆，符合下列 schema：
 
 {{
   "match_score": 整數0-100,
@@ -361,14 +361,14 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 }}
 
 重要規則：
-- 所有回應文字必須完全使用{detected_language}，不能混合其他語言，不用使用敬語（您）
+- 所有回應文字必須完全使用{language}，不能混合其他語言，不用使用敬語（您）
 - match_explanation：請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣
 - priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個技能要包含explanation說明為何得分是這樣。
 - matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式描述哪裡有符合、排版恰當，不用寫「因此給予怎樣的權重。」
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
          - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
            * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
-           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用{detected_language}，自然表達，不用敬語，可以用「你」）
+           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用{language}，自然表達，不用敬語，可以用「你」）
            * 技能差距分析：缺少技能、學習方向、免費資源/課程建議
            * 面試準備建議：潛在問題、回答方向、STAR回答框架提示
            * 作品集建議：小專案題目、展示建議
@@ -394,7 +394,7 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 - 相同的履歷和職缺描述必須產生相同的分數和評估結果
 - 使用結構化的評估標準，避免主觀判斷
 - 優先考慮客觀指標（年數、技能匹配度）而非主觀感受
-- 嚴格遵守語言一致性：所有回應必須完全使用{detected_language}，不能出現任何其他語言"""
+- 嚴格遵守語言一致性：所有回應必須完全使用{language}，不能出現任何其他語言""".format(language=detected_language)
 
     user_prompt = f"""
 履歷內容：
