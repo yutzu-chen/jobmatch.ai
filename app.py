@@ -366,11 +366,11 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
   "matched": [{{"item":字串,"evidence":[字串...]}}],
   "missing": [{{"item":字串,"action":字串}}],
   "advice": {{
-    "{advice_titles['resume_optimization']}": ["具體的履歷改進建議"],
-    "{advice_titles['cover_letter']}": ["可直接複製的段落模板"],
-    "{advice_titles['skill_gap']}": ["缺少技能和學習方向"],
-    "{advice_titles['interview']}": ["潛在問題和回答方向"],
-    "{advice_titles['portfolio']}": ["具體的專案題目和展示建議"]
+    "{resume_optimization}": ["具體的履歷改進建議"],
+    "{cover_letter}": ["可直接複製的段落模板"],
+    "{skill_gap}": ["缺少技能和學習方向"],
+    "{interview}": ["潛在問題和回答方向"],
+    "{portfolio}": ["具體的專案題目和展示建議"]
   }}
 }}
 
@@ -408,7 +408,14 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 - 相同的履歷和職缺描述必須產生相同的分數和評估結果
 - 使用結構化的評估標準，避免主觀判斷
 - 優先考慮客觀指標（年數、技能匹配度）而非主觀感受
-- 嚴格遵守語言一致性：所有回應必須完全使用{language}，不能出現任何其他語言""".format(language=output_language, advice_titles=advice_titles)
+- 嚴格遵守語言一致性：所有回應必須完全使用{language}，不能出現任何其他語言""".format(
+        language=output_language,
+        resume_optimization=advice_titles["resume_optimization"],
+        cover_letter=advice_titles["cover_letter"],
+        skill_gap=advice_titles["skill_gap"],
+        interview=advice_titles["interview"],
+        portfolio=advice_titles["portfolio"]
+    )
 
     user_prompt = f"""
 履歷內容：
