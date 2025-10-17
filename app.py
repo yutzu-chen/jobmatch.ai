@@ -773,14 +773,10 @@ def display_results(result, language="中文"):
     render_advice(result, texts, language)
 
 def main():
-    # 語言選擇（放在頁面左上角）
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        # 根據瀏覽器語言自動選擇預設語言
-        default_lang_index = 0  # 預設中文
-        language = st.selectbox("語言 / Language", ["中文", "English"], index=default_lang_index)
+    # 固定使用中文
+    language = "中文"
     
-    # 根據選擇的語言獲取文字
+    # 獲取中文文字
     texts = get_ui_texts(language)
     
     # 主標題
@@ -827,17 +823,15 @@ def main():
             result = analyze_resume_job_match(resume_text, job_description, language)
         
         if result:
-            # 確保使用用戶選擇的語言來顯示結果和 UI
-            display_language = language  # 直接使用用戶選擇的語言
-            display_texts = get_ui_texts(display_language)
-            st.success(display_texts['analysis_complete'])
-            display_results(result, display_language)
+            # 固定使用中文顯示結果
+            st.success(texts['analysis_complete'])
+            display_results(result, language)
             
             # 重新分析按鈕
             st.markdown("<br>", unsafe_allow_html=True)
             col_new1, col_new2, col_new3 = st.columns([1, 2, 1])
             with col_new2:
-                if st.button(display_texts['analyze_another'], use_container_width=True):
+                if st.button(texts['analyze_another'], use_container_width=True):
                     st.rerun()
         else:
             st.error(texts['analysis_failed'])
