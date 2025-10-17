@@ -5,6 +5,8 @@ import os
 import hashlib
 from dotenv import load_dotenv
 import time
+from ui_texts import get_ui_texts
+from styles import apply_global_styles
 
 # 載入環境變數
 load_dotenv()
@@ -17,275 +19,9 @@ st.set_page_config(
     initial_sidebar_state="collapsed"
 )
 
-# 自定義 CSS 樣式 - 簡約風格
-st.markdown("""
-<style>
-    /* 整體頁面樣式 */
-    .main .block-container {
-        padding-top: 2rem;
-        padding-bottom: 2rem;
-        max-width: 1000px;
-    }
-    
-    /* 主標題 */
-    .main-header {
-        font-size: 2.5rem;
-        font-weight: 300;
-        text-align: center;
-        color: #1a1a1a;
-        margin-bottom: 2rem;
-        margin-top: 1rem;
-        /* letter-spacing: -0.02em; Safari 兼容性 */
-    }
-    
-    /* 副標題 */
-    .subtitle {
-        text-align: center;
-        color: #666;
-        font-size: 1rem;
-        margin-bottom: 3rem;
-        font-weight: 400;
-        line-height: 1.5;
-    }
-    
-    /* 匹配度分數容器 */
-    .score-container {
-        background: #ffffff;
-        border: 1px solid #e1e5e9;
-        padding: 2rem;
-        border-radius: 8px;
-        text-align: center;
-        color: #1a1a1a;
-        margin: 2rem 0;
-        /* box-shadow: 0 1px 3px rgba(0,0,0,0.1); Safari 兼容性 */
-    }
-    
-    .score-number {
-        font-size: 3rem;
-        font-weight: 200;
-        margin: 0;
-        color: #1a1a1a;
-    }
-    
-    .score-label {
-        font-size: 1rem;
-        margin: 0;
-        color: #666;
-        font-weight: 400;
-    }
-    
-    /* 優先技能標籤 */
-    .priority-item {
-        background: #f8f9fa;
-        color: #495057;
-        padding: 0.4rem 0.8rem;
-        border-radius: 4px;
-        margin: 0.2rem;
-        display: inline-block;
-        font-weight: 400;
-        font-size: 0.9rem;
-        border: 1px solid #e9ecef;
-    }
-    
-    /* 符合的經驗項目 */
-    .matched-item {
-        background: #ffffff;
-        border: 1px solid #d4edda;
-        padding: 1rem;
-        border-radius: 6px;
-        margin: 0.5rem 0;
-        border-left: 3px solid #28a745;
-    }
-    
-    /* 缺少的經驗項目 */
-    .missing-item {
-        background: #ffffff;
-        border: 1px solid #f8d7da;
-        padding: 1rem;
-        border-radius: 6px;
-        margin: 0.5rem 0;
-        border-left: 3px solid #dc3545;
-    }
-    
-    /* AI 建議框 */
-    .advice-box {
-        background: #ffffff;
-        border: 1px solid #e1e5e9;
-        color: #1a1a1a;
-        padding: 1.5rem;
-        border-radius: 6px;
-        font-size: 1rem;
-        line-height: 1.6;
-        margin: 1rem 0;
-    }
-    
-    .advice-box ul {
-        padding-left: 1.5rem;
-        margin: 0.5rem 0;
-    }
-    
-    .advice-box li {
-        margin: 0.5rem 0;
-        line-height: 1.6;
-    }
-    
-    .advice-box strong {
-        font-weight: 600;
-    }
-    
-    /* 語言選擇器樣式 */
-    .stSelectbox > div > div {
-        width: 120px !important;
-    }
-    
-    .stSelectbox > div > div > select {
-        font-size: 0.9rem !important;
-        padding: 0.3rem 0.5rem !important;
-        height: 2rem !important;
-    }
-    
-    /* 輸入框樣式 */
-    .stTextArea > div > div > textarea {
-        border: 1px solid #e1e5e9;
-        border-radius: 6px;
-        font-size: 0.9rem;
-    }
-    
-    .stTextArea > div > div > textarea:focus {
-        border-color: #007bff;
-        /* box-shadow: 0 0 0 2px rgba(0,123,255,0.25); Safari 兼容性 */
-    }
-    
-    /* 按鈕樣式 */
-    .stButton > button {
-        background-color: #007bff;
-        color: white;
-        border: none;
-        border-radius: 6px;
-        font-weight: 500;
-        transition: background-color 0.2s;
-    }
-    
-    .stButton > button:hover {
-        background-color: #0056b3;
-    }
-    
-    /* 側邊欄樣式 */
-    .css-1d391kg {
-        background-color: #f8f9fa;
-    }
-    
-    /* 標題樣式 */
-    h1, h2, h3 {
-        color: #1a1a1a;
-        font-weight: 500;
-    }
-    
-    /* 移除默認的邊框和陰影 */
-    .stApp {
-        background-color: #ffffff;
-    }
-    
-    /* 簡化表格樣式 */
-    .stDataFrame {
-        border: none;
-    }
-</style>
-""", unsafe_allow_html=True)
+# 應用全域 CSS 樣式
+apply_global_styles()
 
-def get_ui_texts(language):
-    """根據語言返回界面文字"""
-    texts = {
-        "中文": {
-            "app_title": "JobMatch.AI",
-            "app_subtitle": "看見你的強項，精準補齊差距：30 秒搞懂這份職缺適不適合你",
-            "settings_title": "設置",
-            "language_label": "分析語言",
-            "instructions_title": "使用說明",
-            "instructions": [
-                "在左側貼上你的履歷內容",
-                "在右側貼上職缺描述",
-                "點擊「開始分析」",
-                "查看匹配度結果和建議"
-            ],
-            "privacy_title": "隱私保護",
-            "privacy": [
-                "不保存任何履歷內容",
-                "分析完成後自動清除",
-                "完全免費使用"
-            ],
-            "resume_title": "履歷內容",
-            "resume_placeholder": "請貼上你的履歷內容（支援中英文）",
-            "resume_example": "例如：\n姓名：張小明\n學歷：台灣大學資訊工程系\n工作經驗：\n- 2020-2022 軟體工程師，負責前端開發\n- 具備 React, JavaScript, Python 經驗\n...",
-            "job_title": "職缺描述",
-            "job_placeholder": "請貼上職缺描述（Job Description）",
-            "job_example": "例如：\n職位：前端工程師\n要求：\n- 3年以上 React 開發經驗\n- 熟悉 JavaScript, TypeScript\n- 具備團隊協作能力\n- 有產品思維\n...",
-            "analyze_button": "開始分析",
-            "analyze_another": "分析另一份職缺",
-            "match_score_label": "總體匹配度",
-            "priorities_title": "職缺關鍵經驗/技能",
-            "matched_title": "我符合的經驗",
-            "missing_title": "我缺少的經驗",
-            "advice_title": "AI 建議",
-            "advice_resume_optimization": "履歷優化",
-            "advice_cover_letter": "求職信建議",
-            "advice_skill_gap": "技能差距分析",
-            "advice_interview": "面試準備建議",
-            "advice_portfolio": "作品集建議",
-            "no_matched": "暫無符合的經驗",
-            "all_skills_met": "所有關鍵技能都已具備！",
-            "copy_advice": "複製建議文字",
-            "analyzing": "AI 正在分析中，請稍候...",
-            "analysis_complete": "分析完成！",
-            "analysis_failed": "分析失敗，請檢查 API 設置或稍後再試",
-            "fill_required": "請填寫履歷內容和職缺描述"
-        },
-        "English": {
-            "app_title": "JobMatch.AI",
-            "app_subtitle": "See your strengths, bridge the gaps: 30 seconds to know if this job fits you",
-            "settings_title": "Settings",
-            "language_label": "Analysis Language",
-            "instructions_title": "Instructions",
-            "instructions": [
-                "Paste your resume content on the left",
-                "Paste job description on the right",
-                "Click 'Start Analysis'",
-                "View matching results and recommendations"
-            ],
-            "privacy_title": "Privacy Protection",
-            "privacy": [
-                "No resume content is saved",
-                "Automatically cleared after analysis",
-                "Completely free to use"
-            ],
-            "resume_title": "Resume Content",
-            "resume_placeholder": "Please paste your resume content",
-            "resume_example": "Example:\nName: John Smith\nEducation: Computer Science, MIT\nExperience:\n- 2020-2022 Software Engineer, Frontend Development\n- Proficient in React, JavaScript, Python\n...",
-            "job_title": "Job Description",
-            "job_placeholder": "Please paste job description",
-            "job_example": "Example:\nPosition: Frontend Engineer\nRequirements:\n- 3+ years React development experience\n- Familiar with JavaScript, TypeScript\n- Team collaboration skills\n- Product mindset\n...",
-            "analyze_button": "Start Analysis",
-            "analyze_another": "Analyze Another Job",
-            "match_score_label": "Overall Match Score",
-            "priorities_title": "Job Key Experience/Skills",
-            "matched_title": "My Matching Experience",
-            "missing_title": "Missing Experience",
-            "advice_title": "AI Recommendations",
-            "advice_resume_optimization": "Resume Optimization",
-            "advice_cover_letter": "Cover Letter Suggestions",
-            "advice_skill_gap": "Skill Gap Analysis",
-            "advice_interview": "Interview Preparation",
-            "advice_portfolio": "Portfolio Suggestions",
-            "no_matched": "No matching experience found",
-            "all_skills_met": "All key skills are met!",
-            "copy_advice": "Copy Recommendations",
-            "analyzing": "AI is analyzing, please wait...",
-            "analysis_complete": "Analysis complete!",
-            "analysis_failed": "Analysis failed, please check API settings or try again later",
-            "fill_required": "Please fill in resume content and job description"
-        },
-    }
-    return texts.get(language, texts["中文"])
 
 def initialize_gemini_client():
     """初始化 Google Gemini 客戶端"""
@@ -303,19 +39,70 @@ def initialize_gemini_client():
         st.error(f"❌ Gemini 客戶端初始化失敗: {str(e)}")
         return None
 
-def detect_language(text):
-    """檢測文本的主要語言"""
-    # 更準確的語言檢測邏輯
-    chinese_chars = len([c for c in text if '\u4e00' <= c <= '\u9fff'])
-    english_chars = len([c for c in text if c.isalpha() and ord(c) < 128])
-    total_chars = chinese_chars + english_chars
-    
-    if total_chars == 0:
-        return "English"  # 預設英文
-    
-    chinese_ratio = chinese_chars / total_chars
-    # 提高閾值，只有當中文字符佔比超過 50% 時才認為是中文
-    return "中文" if chinese_ratio > 0.5 else "English"
+
+def translate_chinese_to_english(chinese_response):
+    """使用 Gemini API 將中文回應翻譯成英文"""
+    try:
+        # 創建翻譯提示詞（使用英文）
+        translation_prompt = f"""
+Please translate the following Chinese JSON response to English, maintaining exactly the same JSON structure and format, only translating the text content:
+
+{chinese_response}
+
+Requirements:
+1. Keep JSON structure exactly the same - especially the "advice" section structure
+2. Translate all Chinese text to English
+3. Keep numbers, percentages, and format unchanged
+4. Use standard English translations for professional terms
+5. For the "advice" section, maintain the exact same structure with proper subtitles and bullet points
+6. Ensure advice items with "name" and "items" structure are preserved exactly
+7. Return only the translated JSON, no other text
+
+CRITICAL: The "advice" section must maintain its structured format with subtitles and bullet points. Do not flatten or simplify the structure.
+
+Specific translation guidelines:
+- "面試準備建議" → "Interview Preparation"
+- "潛在問題" → "Potential Questions" 
+- "回答方向" → "Response Direction"
+- "作品集建議" → "Portfolio Suggestions"
+- "小專案題目" → "Mini Project Ideas"
+- "展示建議" → "Showcase Suggestions"
+- "技能差距分析" → "Skill Gap Analysis"
+- "缺少技能" → "Missing Skills"
+- "學習方向" → "Learning Directions"
+
+Ensure ALL sub-items are translated and preserved, including:
+- Skill Gap Analysis: Both "Missing Skills" and "Learning Directions" sections
+- Interview Preparation: Both "Potential Questions" and "Response Direction" sections
+- Portfolio Suggestions: Both "Mini Project Ideas" and "Showcase Suggestions" sections
+
+CRITICAL: Each advice section must have its sub-sections with proper "name" and "items" structure. Do not flatten the structure.
+"""
+        
+        # 調用 Gemini API
+        model = genai.GenerativeModel('gemini-2.5-flash-lite')
+        response = model.generate_content(translation_prompt)
+        
+        # 解析回應
+        translated_text = response.text.strip()
+        
+        # 清理回應，移除可能的markdown格式
+        if translated_text.startswith('```json'):
+            translated_text = translated_text[7:]
+        if translated_text.endswith('```'):
+            translated_text = translated_text[:-3]
+        translated_text = translated_text.strip()
+        
+        # 嘗試解析JSON以驗證格式
+        import json
+        json.loads(translated_text)
+        
+        return translated_text
+        
+    except Exception as e:
+        print(f"翻譯錯誤: {e}")
+        print(f"原始回應: {response.text if 'response' in locals() else 'No response'}")
+        return chinese_response  # 如果翻譯失敗，返回原文
 
 def analyze_resume_job_match(resume_text, job_description, ui_language="中文"):
     """使用 Google Gemini API 分析履歷與職缺匹配度"""
@@ -355,43 +142,100 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
             "portfolio": "Portfolio Suggestions"
         }
     
-    # 根據語言定義系統提示詞
-    if output_language == "中文":
-        system_prompt = """你是專業職涯顧問。請閱讀【履歷】與【職缺】，並 ONLY 以 JSON 回覆，符合下列 schema：
+    # 定義系統提示詞（只保留中文版本）
+    system_prompt = """你是專業職涯顧問。請閱讀【履歷】與【職缺】，並 ONLY 以 JSON 回覆，符合下列 schema：
 
 {{
-  "match_score": 整數0-100,
+  "match_score": 整數0-100（整體匹配度，必須綜合考慮所有技能匹配情況，如果職缺是專業領域但履歷沒有相關背景，分數應該很低）,
   "confidence": 浮點0-1,
   "match_explanation": "請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣",
-  "priorities": [{{"name":字串,"weight":0-1,"explanation":字串}}],
-  "matched": [{{"item":字串,"evidence":[字串...]}}],
+  "priorities": [{{"name":字串,"weight":0-1,"explanation":字串}}]（weight是匹配度分數，不是權重！如果履歷沒有相關經驗，weight應該很低0-0.2）,
+  "matched": [{{"item":"技能名稱","evidence":"一段完整的summary描述，說明履歷中如何符合此技能要求，不要列點，要寫成流暢的段落"}}],
   "missing": [{{"item":字串,"action":字串}}],
   "advice": {{
-    "{resume_optimization}": ["具體的履歷改進建議"],
-    "{cover_letter}": ["可直接複製的段落模板"],
-    "{skill_gap}": ["缺少技能和學習方向"],
-    "{interview}": ["潛在問題和回答方向"],
-    "{portfolio}": ["具體的專案題目和展示建議"]
+    "{resume_optimization}": [
+      {{"name": "履歷優化", "items": [
+        "具體建議項目1",
+        "具體建議項目2", 
+        "具體建議項目3"
+      ]}}
+    ],
+    "{cover_letter}": [
+      {{"name": "求職信建議", "items": [
+        "開場句：具體內容",
+        "中段敘述：具體內容",
+        "結尾句：具體內容"
+      ]}}
+    ],
+    "{skill_gap}": [
+      {{"name": "缺少技能", "items": [
+        "技能項目1",
+        "技能項目2", 
+        "技能項目3"
+      ]}},
+      {{"name": "學習方向", "items": [
+        "學習建議1",
+        "學習建議2",
+        "學習建議3"
+      ]}}
+    ],
+    "{interview}": [
+      {{"name": "潛在問題", "items": [
+        "問題1",
+        "問題2",
+        "問題3"
+      ]}},
+      {{"name": "回答方向", "items": [
+        "回答策略1",
+        "回答策略2",
+        "回答策略3"
+      ]}}
+    ],
+    "{portfolio}": [
+      {{"name": "小專案題目", "items": [
+        "專案題目1",
+        "專案題目2",
+        "專案題目3"
+      ]}},
+      {{"name": "展示建議", "items": [
+        "展示建議1",
+        "展示建議2",
+        "展示建議3"
+      ]}}
+    ]
   }}
 }}
 
 重要規則：
 - 所有回應文字必須完全使用中文，不能混合其他語言，不使用敬語（您）
+- 公司名稱、產品名稱、技術術語等專有名詞保持原文，但描述文字必須使用中文
 - match_explanation：請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣
-- priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個技能要包含explanation說明為何得分是這樣。
-- matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式描述哪裡有符合、排版恰當，不用寫「因此給予怎樣的權重。」
-- missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
-         - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
-           * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
-           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用中文，自然表達，不用敬語，可以用「你」）
-           * 技能差距分析：缺少技能、學習方向、免費資源/課程建議
-           * 面試準備建議：潛在問題、回答方向、STAR回答框架提示
-           * 作品集建議：小專案題目、展示建議
+- priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個技能的name和explanation都必須使用中文描述，不能出現英文。weight是匹配度分數（0-1），不是權重！如果履歷沒有相關經驗，weight應該很低（0-0.2）。explanation要說明為何得分是這樣。特別注意：如果職缺明確要求核心技能（如程式語言、技術工具、監管合規、專業認證等），而履歷中沒有相關經驗，該技能匹配度應該給0-20%，整體匹配度也會大幅降低。
+- matched：標題要是關鍵技能，使用中文描述；evidence必須是一段完整的summary描述，說明履歷中如何符合此技能要求，不要列點，要寫成流暢的段落。所有描述文字必須使用中文，不能出現英文描述。絕對不能直接複製貼上履歷內容，必須是整理過後的摘要和總結。
+- missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂，使用中文描述
+         - advice：必須包含以下五個類別，每個類別使用固定的標題結構，AI只需要填入具體內容：
+           * 履歷優化：使用固定標題「履歷優化」，items中填入3-5個具體的履歷改進建議，每個建議都要完全不同且具體，不能有任何重複的內容或相似的建議
+           * 求職信建議：使用固定標題「求職信建議」，items中必須包含「開場句：」、「中段敘述：」、「結尾句：」三個固定格式，冒號後填入具體內容，每個部分都要完全不同，不能有任何重複
+           * 技能差距分析：使用固定標題「缺少技能」和「學習方向」，每個標題的items中填入3-5個具體項目，所有項目都必須完全不同，不能有任何重複或相似的內容
+           * 面試準備建議：使用固定標題「潛在問題」和「回答方向」，每個標題的items中填入3-5個具體項目，所有項目都必須完全不同，不能有任何重複
+           * 作品集建議：使用固定標題「小專案題目」和「展示建議」，每個標題的items中填入3-5個具體項目，所有項目都必須完全不同，不能有任何重複
+           * 重要：所有標題名稱必須完全按照上述固定格式，不能改變！AI只需要在items中填入具體內容，所有內容必須完全使用中文
+           * 去重要求：履歷優化建議中，每一條都必須針對不同的細節（例如技能工具、使用方式、結果影響、具體任務），不能單純換句話說，也不能針對同一經驗做出多條類似建議。如果履歷中只有單一工作經歷，請避免重複針對同一段經歷提出建議，建議應多角度、廣泛提出，包括整體格式、成果量化、工作分類、前後脈絡等。請在每生成一條建議前，自我檢查是否與前面內容語意相近，如果是就跳過。所有advice項目都必須完全不同，不能有任何重複或相似的內容
 - 僅回 JSON，不要其他文字
 
 特別注意：
 1. priorities 中的技能必須是職缺描述中明確提及或要求的技能，不能因為履歷中有相關經驗就加入職缺關鍵技能中！
-2. 經驗年數評估規則：
+2. weight評分範例：
+   - 履歷有相關經驗：weight = 0.7-0.9（70-90%）
+   - 履歷沒有相關經驗：weight = 0.0-0.2（0-20%）
+   - 錯誤範例：履歷沒有監管合規經驗，但給weight = 0.9（90%）❌
+   - 正確範例：履歷沒有監管合規經驗，給weight = 0.1（10%）✅
+3. 整體匹配度計算規則：
+   - 如果職缺是專業領域（法務、醫療、金融、會計、工程等）但履歷完全沒有相關背景：整體匹配度不超過30-40%
+   - 如果職缺要求多個核心技能但履歷大部分都沒有：整體匹配度不超過40-50%
+   - 如果履歷有相關背景但經驗不足：整體匹配度50-70%
+   - 如果履歷經驗充足且技能匹配：整體匹配度70-90%
+4. 經驗年數評估規則：
    - 只有當職缺有提到此年數要求才需要考慮此規則
    - 職缺要求 X 年經驗，履歷有 Y 年經驗：
      * Y >= X：給 90-100%（經驗充足或超過要求）
@@ -399,11 +243,13 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
      * Y >= X*0.6：給 50-70%（經驗不足但可接受）
      * Y < X*0.6：給 30-50%（經驗嚴重不足）
    - 必須在 explanation 中明確說明年數差距對分數的影響
-3. 技能匹配評估規則：
+5. 技能匹配評估規則：
    - 履歷明確提到相關經驗：給 70-90%
    - 履歷有相關但描述較少：給 50-70%
    - 履歷沒有明確提到：給 20-40%
+   - 如果職缺要求特定核心技能（如程式語言、技術工具、監管合規、專業認證等），而履歷完全沒有相關經驗：給 0-20%
    - 不要過於保守，如果履歷中有相關經驗就應該給合理的高分
+   - 如果職缺是專業領域職位（如技術、法務、醫療、金融、會計等）但履歷沒有相關專業背景，整體匹配度應該顯著降低（通常不超過30-40%）
 
 一致性要求：
 - 相同的履歷和職缺描述必須產生相同的分數和評估結果
@@ -416,70 +262,9 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
             interview=advice_titles["interview"],
             portfolio=advice_titles["portfolio"]
         )
-    else:
-        system_prompt = """You are a professional career consultant. Please read the [Resume] and [Job Description], and respond ONLY in JSON format following this schema:
 
-{{
-  "match_score": integer 0-100,
-  "confidence": float 0-1,
-  "match_explanation": "Write a natural language explanation of no more than 3 paragraphs based on the resume and job description comparison results, to be used for UI display of match summary. Use simple, clear, and human-like tone",
-  "priorities": [{{"name":string,"weight":0-1,"explanation":string}}],
-  "matched": [{{"item":string,"evidence":[string...]}}],
-  "missing": [{{"item":string,"action":string}}],
-  "advice": {{
-    "{resume_optimization}": ["Specific resume improvement suggestions"],
-    "{cover_letter}": ["Copy-paste paragraph templates"],
-    "{skill_gap}": ["Missing skills and learning directions"],
-    "{interview}": ["Potential questions and answer directions"],
-    "{portfolio}": ["Specific project topics and presentation suggestions"]
-  }}
-}}
-
-Important Rules:
-- All response text must be completely in English, no mixing of other languages, no formal language (use "you")
-- match_explanation: Write a natural language explanation of no more than 3 paragraphs based on the resume and job description comparison results, to be used for UI display of match summary. Use simple, clear, and human-like tone
-- priorities: Must only select important key skills from the job description content, cannot include skills not mentioned in the job description! Each skill must include explanation of why the score is given.
-- matched: Title should be key skills, first letter capitalized; if content has multiple points, use bullet points to describe where there's a match, proper formatting, don't write "therefore giving such weight"
-- missing: Don't write "Suggested action: supplement relevant experience in resume" for each one, text should be logical with beginning and end; title should be logical experience/skills mentioned in resume, should be understandable
-         - advice: Must include the following five categories, each providing specific actionable suggestions:
-           * Resume Optimization: Key missing skill suggestions, specific sentences to add, skill section ordering suggestions, achievement quantification suggestions
-           * Cover Letter Suggestions: Opening sentence templates, middle section connecting past experience, closing sentence templates (use English, natural expression, no formal language, can use "you")
-           * Skill Gap Analysis: Missing skills, learning directions, free resources/course suggestions
-           * Interview Preparation: Potential questions, answer directions, STAR answer framework tips
-           * Portfolio Suggestions: Small project topics, presentation suggestions
-- Only return JSON, no other text
-
-Special Notes:
-1. Skills in priorities must be explicitly mentioned or required in the job description, cannot include skills just because there's related experience in the resume!
-2. Experience years evaluation rules:
-   - Only consider this rule when the job posting mentions specific years requirement
-   - Job requires X years experience, resume has Y years experience:
-     * Y >= X: Give 90-100% (sufficient or exceeding requirements)
-     * Y >= X*0.8: Give 70-85% (close to requirements)
-     * Y >= X*0.6: Give 50-70% (insufficient but acceptable)
-     * Y < X*0.6: Give 30-50% (severely insufficient)
-   - Must clearly explain in explanation how years gap affects the score
-3. Skill matching evaluation rules:
-   - Resume explicitly mentions related experience: Give 70-90%
-   - Resume has related but less description: Give 50-70%
-   - Resume doesn't explicitly mention: Give 20-40%
-   - Don't be overly conservative, if resume has related experience should give reasonable high score
-
-Consistency Requirements:
-- Same resume and job description must produce same score and evaluation results
-- Use structured evaluation standards, avoid subjective judgment
-- Prioritize objective indicators (years, skill matching) over subjective feelings
-- Strictly follow language consistency: All responses must be completely in English, cannot appear any other language""".format(
-        resume_optimization=advice_titles["resume_optimization"],
-        cover_letter=advice_titles["cover_letter"],
-        skill_gap=advice_titles["skill_gap"],
-        interview=advice_titles["interview"],
-        portfolio=advice_titles["portfolio"]
-    )
-
-    # 根據語言定義用戶提示詞
-    if output_language == "中文":
-        user_prompt = f"""
+    # 定義用戶提示詞（只保留中文版本）
+    user_prompt = f"""
 履歷內容：
 {resume_text}
 
@@ -487,16 +272,6 @@ Consistency Requirements:
 {job_description}
 
 請分析匹配度並提供建議。
-"""
-    else:
-        user_prompt = f"""
-Resume Content:
-{resume_text}
-
-Job Description:
-{job_description}
-
-Please analyze the match and provide recommendations.
 """
 
     try:
@@ -587,8 +362,20 @@ Please analyze the match and provide recommendations.
                     json_text = json_text.rstrip() + '}'
             
             result = json.loads(json_text)
-            # 將輸出語言添加到結果中
-            result['output_language'] = output_language
+            
+            # 如果是英文版本，需要翻譯中文回應
+            if output_language == "English":
+                print("開始翻譯中文回應為英文...")
+                # 將中文回應轉換為JSON字串
+                chinese_json = json.dumps(result, ensure_ascii=False, indent=2)
+                print(f"中文JSON長度: {len(chinese_json)}")
+                # 翻譯為英文
+                english_json = translate_chinese_to_english(chinese_json)
+                print(f"英文JSON長度: {len(english_json)}")
+                # 解析翻譯後的JSON
+                result = json.loads(english_json)
+                print("翻譯完成！")
+            
             # 將結果存入緩存
             st.session_state.analysis_cache[input_hash] = result
             return result
@@ -605,63 +392,71 @@ Please analyze the match and provide recommendations.
         st.error(f"❌ API 調用失敗: {str(e)}")
         return None
 
-def display_results(result, language="中文"):
-    """顯示分析結果"""
-    if not result:
-        return
-    
-    # 根據語言設置文字
-    texts = get_ui_texts(language)
-    
-    # 匹配度分數
+def render_score_block(result, texts, language):
+    """渲染匹配度分數區塊"""
     match_score = result.get('match_score', 0)
     match_explanation = result.get('match_explanation', '')
     
-    # 根據語言調整字體大小
-    font_size = "0.9rem" if language == "English" else "0.85rem"
+    # 統一匹配度說明的字體大小
+    font_size = "0.9rem"
+    
+    # 處理匹配度說明，確保所有段落都有統一樣式
+    if match_explanation:
+        # 將說明文字分割成段落
+        paragraphs = match_explanation.split('\n\n')
+        explanation_html = ""
+        for paragraph in paragraphs:
+            if paragraph.strip():
+                explanation_html += f'<p style="font-size: {font_size}; margin: 0.5rem 0; opacity: 0.8; line-height: 1.6;">{paragraph.strip()}</p>'
+    else:
+        explanation_html = ""
     
     st.markdown(f"""
     <div class="score-container">
         <h1 class="score-number">{match_score}%</h1>
         <p class="score-label">{texts['match_score_label']}</p>
-        <p style="font-size: {font_size}; margin-top: 0.5rem; opacity: 0.8;">{match_explanation}</p>
+        {explanation_html}
     </div>
     """, unsafe_allow_html=True)
     
-    # 職缺關鍵技能
-    if 'priorities' in result and result['priorities']:
-        st.markdown(f"### {texts['priorities_title']}")
-        
-        # 顯示技能分數解釋
-        if 'score_explanation' in result and result['score_explanation']:
-            explanation_font_size = "1.0rem" if language == "English" else "0.9rem"
-            st.markdown(f"<p style='font-size: {explanation_font_size}; color: #666; margin-bottom: 1rem;'>{result['score_explanation']}</p>", unsafe_allow_html=True)
-        
-        # 顯示技能和權重
-        for i, priority in enumerate(result['priorities'], 1):
-            if isinstance(priority, dict):
-                name = priority.get('name', '')
-                weight = priority.get('weight', 0)
-                explanation = priority.get('explanation', '')
-                weight_percent = int(weight * 100)
-                color = "#28a745" if weight >= 0.7 else "#ffc107" if weight >= 0.5 else "#dc3545"
-                
-                st.markdown(f"""
-                <div style="background: #f8f9fa; padding: 0.8rem; margin: 0.3rem 0; border-radius: 6px; 
-                           border-left: 3px solid {color};">
-                    <div style="margin-bottom: 0.3rem;">
-                        <span style="font-weight: 500;">{i}. {name}</span>
-                        <span style="font-weight: bold; color: {color}; float: right;">{weight_percent}%</span>
-                        <div style="clear: both;"></div>
-                    </div>
-                    <small style="color: #666; font-size: {'0.9rem' if language == 'English' else '0.8rem'};">{explanation}</small>
-                </div>
-                """, unsafe_allow_html=True)
-            else:
-                # 兼容舊格式
-                st.markdown(f"<div class='priority-item'>{i}. {priority}</div>", unsafe_allow_html=True)
+def render_priorities(result, texts, language):
+    """渲染職缺關鍵技能區塊"""
+    if 'priorities' not in result or not result['priorities']:
+        return
     
-    # 雙欄結果
+    st.markdown(f"### {texts['priorities_title']}")
+    
+    # 顯示技能分數解釋
+    if 'score_explanation' in result and result['score_explanation']:
+        explanation_font_size = "1.0rem" if language == "English" else "0.9rem"
+        st.markdown(f"<p style='font-size: {explanation_font_size}; color: #666; margin-bottom: 1rem;'>{result['score_explanation']}</p>", unsafe_allow_html=True)
+    
+    # 顯示技能和權重
+    for i, priority in enumerate(result['priorities'], 1):
+        if isinstance(priority, dict):
+            name = priority.get('name', '')
+            weight = priority.get('weight', 0)
+            explanation = priority.get('explanation', '')
+            weight_percent = int(weight * 100)
+            color = "#28a745" if weight >= 0.7 else "#ffc107" if weight >= 0.5 else "#dc3545"
+            
+            st.markdown(f"""
+            <div style="background: #f8f9fa; padding: 0.8rem; margin: 0.3rem 0; border-radius: 6px; 
+                       border-left: 3px solid {color};">
+                <div style="margin-bottom: 0.3rem;">
+                    <span style="font-weight: 500;">{i}. {name}</span>
+                    <span style="font-weight: bold; color: {color}; float: right;">{weight_percent}%</span>
+                    <div style="clear: both;"></div>
+                </div>
+                <small style="color: #666; font-size: {'0.9rem' if language == 'English' else '0.85rem'};">{explanation}</small>
+            </div>
+            """, unsafe_allow_html=True)
+        else:
+            # 兼容舊格式
+            st.markdown(f"<div class='priority-item'>{i}. {priority}</div>", unsafe_allow_html=True)
+    
+def render_matched_missing(result, texts):
+    """渲染符合和缺少的經驗區塊"""
     col1, col2 = st.columns(2)
     
     with col1:
@@ -670,15 +465,19 @@ def display_results(result, language="中文"):
             for item in result['matched']:
                 # 處理新格式（有item和evidence）或舊格式
                 if isinstance(item, dict) and 'item' in item and 'evidence' in item:
-                    evidence_list = item['evidence']
-                    evidence_html = "<ul style='margin: 0.3rem 0; padding-left: 1.2rem;'>"
-                    for evidence in evidence_list:
-                        evidence_html += f"<li style='margin: 0.2rem 0;'>{evidence}</li>"
-                    evidence_html += "</ul>"
+                    evidence = item['evidence']
+                    # 檢查evidence是字串還是列表
+                    if isinstance(evidence, list):
+                        # 如果是列表，合併成一個段落
+                        evidence_text = " ".join(evidence)
+                    else:
+                        # 如果是字串，直接使用
+                        evidence_text = evidence
+                    
                     st.markdown(f'''
                     <div class="matched-item">
-                        <strong>{item["item"]}</strong>
-                        {evidence_html}
+                        <strong>{item["item"]}</strong><br>
+                        <span style="color: #666; font-size: 0.9rem; line-height: 1.5;">{evidence_text}</span>
                     </div>
                     ''', unsafe_allow_html=True)
                 elif isinstance(item, dict) and 'title' in item and 'description' in item:
@@ -707,27 +506,140 @@ def display_results(result, language="中文"):
         else:
             st.success(texts['all_skills_met'])
     
-    # AI 建議
-    if 'advice' in result and result['advice']:
-        st.markdown(f"<div style='font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 1rem 0; color: #1a1a1a;'>{texts['advice_title']}</div>", unsafe_allow_html=True)
-        
-        advice_content = result['advice']
-        
-        # 處理新格式（帶標題的物件）或舊格式
-        if isinstance(advice_content, dict):
-            advice_html = ""
+def parse_advice_item(item, color, seen_items):
+    """智能解析單個建議項目，返回HTML"""
+    html = ""
+    
+    # 字典格式（包含 name 與 items）
+    if isinstance(item, dict) and 'name' in item and 'items' in item:
+        subtitle_name = item['name']
+        subtitle_items = item.get('items') or []
+        html = (
+            f"<div style='font-weight: 600; margin: 1.2rem 0 0.8rem 0; color: #333; "
+            f"font-size: 1rem; border-left: 3px solid {color}; padding-left: 0.8rem;'>{subtitle_name}</div>"
+        )
+        for sub_item in subtitle_items:
+            clean = str(sub_item).strip()
+            if not clean or len(clean) < 5 or clean in seen_items:
+                continue
+            seen_items.add(clean)
             
-            # 定義每個類別的顏色和翻譯映射
-            if language == "中文":
-                advice_config = {
-                    "履歷優化": {"color": "#dc3545", "key": "advice_resume_optimization"},
-                    "求職信建議": {"color": "#007bff", "key": "advice_cover_letter"},
-                    "技能差距分析": {"color": "#28a745", "key": "advice_skill_gap"},
-                    "面試準備建議": {"color": "#6f42c1", "key": "advice_interview"},
-                    "作品集建議": {"color": "#fd7e14", "key": "advice_portfolio"}
-                }
+            # 智能判斷是否為標題：只有當冒號前的文字很短（通常是標題）且冒號後有內容時才當作標題
+            is_title = False
+            if "：" in clean:
+                t, c = clean.split("：", 1)
+                # 只有當冒號前的文字長度小於等於10個字符且冒號後有內容時才當作標題
+                if len(t.strip()) <= 10 and c.strip():
+                    is_title = True
+            elif ":" in clean:
+                t, c = clean.split(":", 1)
+                # 檢查是否為常見的英文標題
+                title_text = t.strip().lower()
+                common_titles = [
+                    "opening", "middle paragraph", "middle paragraphs", "closing", 
+                    "potential questions", "response direction", "mini project ideas", 
+                    "showcase suggestions", "missing skills", "learning directions",
+                    "opening statement", "body paragraph", "closing statement"
+                ]
+                if title_text in common_titles and c.strip():
+                    is_title = True
+                elif len(t.strip()) <= 12 and c.strip():
+                    is_title = True
+            
+            if is_title:
+                t, c = clean.split("：" if "：" in clean else ":", 1)
+                # 檢查是否已經處理過這個標題，避免重複
+                title_key = f"{t.strip()}:"
+                if title_key not in seen_items:
+                    seen_items.add(title_key)
+                html += (
+                    f"<div style='font-weight: 600; margin: 1rem 0 0.5rem 0; color: #333; "
+                    f"font-size: 0.95rem; border-left: 2px solid {color}; padding-left: 0.6rem;'>{t.strip()}：</div>"
+                )
+                if c.strip():
+                    html += (
+                        f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; line-height: 1.6; font-size: 0.9rem;'>"
+                        f"<span style='color: {color}; font-weight: bold; margin-right: 0.5rem;'>•</span>{c.strip()}</div>"
+                    )
             else:
-                advice_config = {
+                # 當作普通 bullet 點處理
+                html += (
+                    f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; line-height: 1.6; font-size: 0.9rem;'>"
+                    f"<span style='color: {color}; font-weight: bold; margin-right: 0.5rem;'>•</span>{clean}</div>"
+                )
+        return html
+
+    # 非字典格式，當作一般條目處理
+    clean = str(item).strip()
+    if not clean or len(clean) < 5 or clean in seen_items:
+        return ""
+    seen_items.add(clean)
+    
+    # 智能判斷是否為標題：只有當冒號前的文字很短（通常是標題）且冒號後有內容時才當作標題
+    is_title = False
+    if "：" in clean:
+        t, c = clean.split("：", 1)
+        # 只有當冒號前的文字長度小於等於8個字符且冒號後有內容時才當作標題
+        # 包含常見的標題詞，如 "開場句", "結尾句", "潛在問題", "回答方向" 等
+        if len(t.strip()) <= 8 and c.strip():
+            is_title = True
+    elif ":" in clean:
+        t, c = clean.split(":", 1)
+        # 檢查是否為常見的英文標題
+        title_text = t.strip().lower()
+        common_titles = [
+            "opening", "middle paragraph", "middle paragraphs", "closing", 
+            "potential questions", "response direction", "mini project ideas", 
+            "showcase suggestions", "missing skills", "learning directions",
+            "opening statement", "body paragraph", "closing statement"
+        ]
+        if title_text in common_titles and c.strip():
+            is_title = True
+        elif len(t.strip()) <= 15 and c.strip():
+            is_title = True
+    
+    if is_title:
+        t, c = clean.split("：" if "：" in clean else ":", 1)
+        # 檢查是否已經處理過這個標題，避免重複
+        title_key = f"{t.strip()}:"
+        if title_key not in seen_items:
+            seen_items.add(title_key)
+        section = (
+            f"<div style='font-weight: 600; margin: 1.2rem 0 0.5rem 0; color: #333; "
+            f"font-size: 1rem; border-left: 3px solid {color}; padding-left: 0.8rem;'>{t.strip()}：</div>"
+        )
+        if c.strip():
+            section += (
+                f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; line-height: 1.6; font-size: 0.9rem;'>"
+                f"<span style='color: {color}; font-weight: bold; margin-right: 0.5rem;'>•</span>{c.strip()}</div>"
+            )
+            return section
+        else:
+            # 如果標題已存在，只返回內容部分
+            if c.strip():
+                return (
+                    f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; line-height: 1.6; font-size: 0.9rem;'>"
+                    f"<span style='color: {color}; font-weight: bold; margin-right: 0.5rem;'>•</span>{c.strip()}</div>"
+                )
+            return ""
+    
+    return (
+        f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; line-height: 1.6; font-size: 0.9rem;'>"
+        f"<span style='color: {color}; font-weight: bold; margin-right: 0.5rem;'>•</span>{clean}</div>"
+    )
+
+def get_advice_config(language):
+    """獲取建議配置"""
+    if language == "中文":
+        config = {
+            "履歷優化": {"color": "#dc3545", "key": "advice_resume_optimization"},
+            "求職信建議": {"color": "#007bff", "key": "advice_cover_letter"},
+            "技能差距分析": {"color": "#28a745", "key": "advice_skill_gap"},
+            "面試準備建議": {"color": "#6f42c1", "key": "advice_interview"},
+            "作品集建議": {"color": "#fd7e14", "key": "advice_portfolio"}
+        }
+    else:
+        config = {
                     "Resume Optimization": {"color": "#dc3545", "key": "advice_resume_optimization"},
                     "Cover Letter Suggestions": {"color": "#007bff", "key": "advice_cover_letter"},
                     "Skill Gap Analysis": {"color": "#28a745", "key": "advice_skill_gap"},
@@ -735,41 +647,130 @@ def display_results(result, language="中文"):
                     "Portfolio Suggestions": {"color": "#fd7e14", "key": "advice_portfolio"}
                 }
             
-            for title, items in advice_content.items():
-                if items and len(items) > 0:
-                    config = advice_config.get(title, {"color": "#666"})
-                    color = config["color"]
-                    
-                    # 使用翻譯後的標題，如果沒有找到則使用原始標題
-                    display_title = texts.get(config.get("key", ""), title)
-                    
-                    advice_html += f"<div style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 600;'>{display_title}</div>"
-                    
-                    # 處理每個建議項目，統一使用標題 → bullet points 結構
-                    for item in items:
-                        import re
-                        clean_item = re.sub(r'\*\*(.*?)\*\*', r'<strong>\1</strong>', str(item))
-                        clean_item = clean_item.replace("*", "").strip()
-                        
-                        # 檢查是否為子標題（包含冒號且長度較短）
-                        if ":" in clean_item and len(clean_item) < 100:
-                            # 這是子標題，使用較大的字體和粗體
-                            advice_html += f"<div style='font-weight: 600; margin: 0.8rem 0 0.3rem 0; color: #333; font-size: 1.1rem;'>{clean_item}</div>"
-                        else:
-                            # 所有其他項目都使用 bullet points (Safari 兼容)
-                            advice_html += f"<div style='margin: 0.3rem 0; padding-left: 1.5rem; line-height: 1.6;'><span style='color: {color}; font-weight: bold; margin-right: 0.5rem;'>•</span>{clean_item}</div>"
-        elif isinstance(advice_content, str):
-            # 字符串格式：直接顯示
-            advice_html = advice_content
-        elif isinstance(advice_content, list):
-            advice_html = "<ul>"
-            for item in advice_content:
-                advice_html += f"<li>{item}</li>"
-            advice_html += "</ul>"
-        else:
-            advice_html = str(advice_content)
-        
-        st.markdown(f'<div class="advice-box">{advice_html}</div>', unsafe_allow_html=True)
+    # 為英文版本添加更多可能的標題變體
+    if language == "English":
+        additional_config = {
+            "Resume": {"color": "#dc3545", "key": "advice_resume_optimization"},
+            "Cover Letter": {"color": "#007bff", "key": "advice_cover_letter"},
+            "Skills": {"color": "#28a745", "key": "advice_skill_gap"},
+            "Interview": {"color": "#6f42c1", "key": "advice_interview"},
+            "Portfolio": {"color": "#fd7e14", "key": "advice_portfolio"},
+            # 添加更多可能的翻譯變體
+            "Skill Gap": {"color": "#28a745", "key": "advice_skill_gap"},
+            "Interview Prep": {"color": "#6f42c1", "key": "advice_interview"},
+            "Portfolio Tips": {"color": "#fd7e14", "key": "advice_portfolio"},
+            "Resume Tips": {"color": "#dc3545", "key": "advice_resume_optimization"},
+            "Cover Letter Tips": {"color": "#007bff", "key": "advice_cover_letter"},
+            # 添加翻譯後的具體子標題
+            "Missing Skills": {"color": "#28a745", "key": "advice_skill_gap"},
+            "Learning Directions": {"color": "#28a745", "key": "advice_skill_gap"},
+            "Potential Questions": {"color": "#6f42c1", "key": "advice_interview"},
+            "Response Direction": {"color": "#6f42c1", "key": "advice_interview"},
+            "Mini Project Ideas": {"color": "#fd7e14", "key": "advice_portfolio"},
+            "Showcase Suggestions": {"color": "#fd7e14", "key": "advice_portfolio"},
+            # 添加求職信建議的子標題
+            "Opening Statement": {"color": "#007bff", "key": "advice_cover_letter"},
+            "Body Paragraph": {"color": "#007bff", "key": "advice_cover_letter"},
+            "Closing Statement": {"color": "#007bff", "key": "advice_cover_letter"}
+        }
+        config.update(additional_config)
+    
+    return config
+
+def find_advice_config(title, advice_config):
+    """智能匹配建議配置"""
+    config = advice_config.get(title, {"color": "#666"})
+    
+    # 如果沒有找到完全匹配，嘗試部分匹配
+    if config == {"color": "#666"}:
+        for config_title, config_data in advice_config.items():
+            # 更寬鬆的匹配規則，支援翻譯後的標題變體
+            if (config_title.lower() in title.lower() or 
+                title.lower() in config_title.lower() or
+                any(word in title.lower() for word in config_title.lower().split()) or
+                # 支援常見的英文標題變體
+                title.lower() in ["skill gap", "interview prep", "portfolio", "resume opt", "cover letter"] or
+                any(word in title.lower() for word in ["skill", "gap", "analysis", "interview", "preparation", "portfolio", "suggestions", "resume", "optimization", "cover", "letter"])):
+                config = config_data
+                break
+    
+    return config
+
+def process_advice_dict(advice_content, texts, language):
+    """處理字典格式的建議內容"""
+    advice_html = ""
+    advice_config = get_advice_config(language)
+    global_seen_items = set()
+    
+    for title, items in advice_content.items():
+        if items and len(items) > 0:
+            config = find_advice_config(title, advice_config)
+            color = config["color"]
+            display_title = texts.get(config.get("key", ""), title)
+            
+            advice_html += f"<div style='color: {color}; margin-top: 0.8rem; margin-bottom: 0.5rem; font-size: 1.5rem; font-weight: 600;'>{display_title}</div>"
+            
+            # 處理每個建議項目
+            for i, item in enumerate(items):
+                # 如果是第一個項目且是主標題，跳過（避免重複）
+                if i == 0:
+                    clean_item = str(item).strip()
+                    # 只跳過完全匹配主標題的情況，避免過度過濾
+                    if clean_item == display_title:
+                        continue
+                
+                # 單一渲染：統一交由 parse_advice_item 處理，避免重複
+                advice_html += parse_advice_item(item, color, global_seen_items)
+    
+    return advice_html
+
+
+def process_advice_string(advice_content):
+    """處理字符串格式的建議內容"""
+    return advice_content
+
+def process_advice_list(advice_content):
+    """處理列表格式的建議內容"""
+    advice_html = "<ul>"
+    for item in advice_content:
+        advice_html += f"<li>{item}</li>"
+    advice_html += "</ul>"
+    return advice_html
+
+def render_advice(result, texts, language):
+    """渲染AI建議區塊"""
+    if 'advice' not in result or not result['advice']:
+        return
+    
+    st.markdown(f"<div style='font-size: 1.5rem; font-weight: 600; margin: 1.5rem 0 1rem 0; color: #1a1a1a;'>{texts['advice_title']}</div>", unsafe_allow_html=True)
+    
+    advice_content = result['advice']
+    
+    # 根據內容類型選擇處理方式
+    if isinstance(advice_content, dict):
+        advice_html = process_advice_dict(advice_content, texts, language)
+    elif isinstance(advice_content, str):
+        advice_html = process_advice_string(advice_content)
+    elif isinstance(advice_content, list):
+        advice_html = process_advice_list(advice_content)
+    else:
+        advice_html = str(advice_content)
+    
+    st.markdown(f'<div class="advice-box">{advice_html}</div>', unsafe_allow_html=True)
+
+def display_results(result, language="中文"):
+    """顯示分析結果"""
+    if not result:
+        return
+    
+    # 根據語言設置文字
+    texts = get_ui_texts(language)
+    
+    # 渲染各個區塊
+    render_score_block(result, texts, language)
+    render_priorities(result, texts, language)
+    render_matched_missing(result, texts)
+    render_advice(result, texts, language)
 
 def main():
     # 語言選擇（放在頁面左上角）

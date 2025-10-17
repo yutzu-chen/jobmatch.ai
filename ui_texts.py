@@ -1,0 +1,93 @@
+def get_ui_texts(language):
+    """根據語言返回界面文字"""
+    texts = {
+        "中文": {
+            "app_title": "JobMatch.AI",
+            "app_subtitle": "看見你的強項，精準補齊差距：30 秒搞懂這份職缺適不適合你",
+            "settings_title": "設置",
+            "language_label": "分析語言",
+            "instructions_title": "使用說明",
+            "instructions": [
+                "在左側貼上你的履歷內容",
+                "在右側貼上職缺描述",
+                "點擊「開始分析」",
+                "查看匹配度結果和建議"
+            ],
+            "privacy_title": "隱私保護",
+            "privacy": [
+                "不保存任何履歷內容",
+                "分析完成後自動清除",
+                "完全免費使用"
+            ],
+            "resume_title": "履歷內容",
+            "resume_placeholder": "請貼上你的履歷內容（支援中英文）",
+            "resume_example": "例如：\n姓名：張小明\n學歷：台灣大學資訊工程系\n工作經驗：\n- 2020-2022 軟體工程師，負責前端開發\n- 具備 React, JavaScript, Python 經驗\n...",
+            "job_title": "職缺描述",
+            "job_placeholder": "請貼上職缺描述（Job Description）",
+            "job_example": "例如：\n職位：前端工程師\n要求：\n- 3年以上 React 開發經驗\n- 熟悉 JavaScript, TypeScript\n- 具備團隊協作能力\n- 有產品思維\n...",
+            "analyze_button": "開始分析",
+            "analyze_another": "分析另一份職缺",
+            "match_score_label": "總體匹配度",
+            "priorities_title": "職缺關鍵經驗/技能",
+            "matched_title": "我符合的經驗",
+            "missing_title": "我缺少的經驗",
+            "advice_title": "AI 建議",
+            "advice_resume_optimization": "履歷優化",
+            "advice_cover_letter": "求職信建議",
+            "advice_skill_gap": "技能差距分析",
+            "advice_interview": "面試準備建議",
+            "advice_portfolio": "作品集建議",
+            "no_matched": "暫無符合的經驗",
+            "all_skills_met": "所有關鍵技能都已具備！",
+            "copy_advice": "複製建議文字",
+            "analyzing": "AI 正在分析中，請稍候...",
+            "analysis_complete": "分析完成！",
+            "analysis_failed": "分析失敗，請檢查 API 設置或稍後再試",
+            "fill_required": "請填寫履歷內容和職缺描述"
+        },
+        "English": {
+            "app_title": "JobMatch.AI",
+            "app_subtitle": "See your strengths, bridge the gaps: 30 seconds to know if this job fits you",
+            "settings_title": "Settings",
+            "language_label": "Analysis Language",
+            "instructions_title": "Instructions",
+            "instructions": [
+                "Paste your resume content on the left",
+                "Paste job description on the right",
+                "Click 'Start Analysis'",
+                "View matching results and recommendations"
+            ],
+            "privacy_title": "Privacy Protection",
+            "privacy": [
+                "No resume content is saved",
+                "Automatically cleared after analysis",
+                "Completely free to use"
+            ],
+            "resume_title": "Resume Content",
+            "resume_placeholder": "Please paste your resume content",
+            "resume_example": "Example:\nName: John Smith\nEducation: Computer Science, MIT\nExperience:\n- 2020-2022 Software Engineer, Frontend Development\n- Proficient in React, JavaScript, Python\n...",
+            "job_title": "Job Description",
+            "job_placeholder": "Please paste job description",
+            "job_example": "Example:\nPosition: Frontend Engineer\nRequirements:\n- 3+ years React development experience\n- Familiar with JavaScript, TypeScript\n- Team collaboration skills\n- Product mindset\n...",
+            "analyze_button": "Start Analysis",
+            "analyze_another": "Analyze Another Job",
+            "match_score_label": "Overall Match Score",
+            "priorities_title": "Job Key Experience/Skills",
+            "matched_title": "My Matching Experience",
+            "missing_title": "Missing Experience",
+            "advice_title": "AI Recommendations",
+            "advice_resume_optimization": "Resume Optimization",
+            "advice_cover_letter": "Cover Letter Suggestions",
+            "advice_skill_gap": "Skill Gap Analysis",
+            "advice_interview": "Interview Preparation",
+            "advice_portfolio": "Portfolio Suggestions",
+            "no_matched": "No matching experience found",
+            "all_skills_met": "All key skills are met!",
+            "copy_advice": "Copy Recommendations",
+            "analyzing": "AI is analyzing, please wait...",
+            "analysis_complete": "Analysis complete!",
+            "analysis_failed": "Analysis failed, please check API settings or try again later",
+            "fill_required": "Please fill in resume content and job description"
+        },
+    }
+    return texts.get(language, texts["中文"])
