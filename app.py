@@ -320,7 +320,7 @@ def detect_language(text):
 def analyze_resume_job_match(resume_text, job_description, ui_language="中文"):
     """使用 Google Gemini API 分析履歷與職缺匹配度"""
     
-    # 直接使用用戶選擇的 UI 語言作為輸出語言
+    # 確保使用用戶選擇的 UI 語言作為輸出語言
     output_language = ui_language
     
     # 創建輸入的哈希值用於緩存（包含輸出語言）
@@ -355,8 +355,9 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
             "portfolio": "Portfolio Suggestions"
         }
     
-    # 系統提示詞
-    system_prompt = """你是專業職涯顧問。請閱讀【履歷】與【職缺】，並 ONLY 以 JSON 回覆，符合下列 schema：
+    # 根據語言定義系統提示詞
+    if output_language == "中文":
+        system_prompt = """你是專業職涯顧問。請閱讀【履歷】與【職缺】，並 ONLY 以 JSON 回覆，符合下列 schema：
 
 {{
   "match_score": 整數0-100,
@@ -375,14 +376,14 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 }}
 
 重要規則：
-- 所有回應文字必須完全使用{language}，不能混合其他語言，不用使用敬語（您）
+- 所有回應文字必須完全使用中文，不能混合其他語言，不使用敬語（您）
 - match_explanation：請根據履歷與職缺的比對結果，撰寫一段不超過 3 段的自然語言說明，用來在 UI 呈現匹配度摘要。請使用簡單清楚、人性化的語氣
 - priorities：必須只從職缺內容中挑出重要關鍵技能，不能包含職缺中未提及的技能！每個技能要包含explanation說明為何得分是這樣。
 - matched：標題要是關鍵技能，首字要大寫；內文若有多點，要列點式描述哪裡有符合、排版恰當，不用寫「因此給予怎樣的權重。」
 - missing：不用每個都寫「建議行動：在履歷中補充相關經驗」，文字要寫的有邏輯，有頭有尾；標題要寫的是有邏輯的履歷提到的經歷、技能，要讓人看得懂
          - advice：必須包含以下五個類別，每個類別提供具體可執行的建議：
            * 履歷優化：關鍵缺漏技能建議、可加入的具體句子、技能欄排序建議、成就量化建議
-           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用{language}，自然表達，不用敬語，可以用「你」）
+           * 求職信建議：開場句模板、中段敘述連結過往經驗、結尾句模板（使用中文，自然表達，不用敬語，可以用「你」）
            * 技能差距分析：缺少技能、學習方向、免費資源/課程建議
            * 面試準備建議：潛在問題、回答方向、STAR回答框架提示
            * 作品集建議：小專案題目、展示建議
@@ -408,8 +409,67 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 - 相同的履歷和職缺描述必須產生相同的分數和評估結果
 - 使用結構化的評估標準，避免主觀判斷
 - 優先考慮客觀指標（年數、技能匹配度）而非主觀感受
-- 嚴格遵守語言一致性：所有回應必須完全使用{language}，不能出現任何其他語言""".format(
-        language=output_language,
+- 嚴格遵守語言一致性：所有回應必須完全使用中文，不能出現任何其他語言""".format(
+            resume_optimization=advice_titles["resume_optimization"],
+            cover_letter=advice_titles["cover_letter"],
+            skill_gap=advice_titles["skill_gap"],
+            interview=advice_titles["interview"],
+            portfolio=advice_titles["portfolio"]
+        )
+    else:
+        system_prompt = """You are a professional career consultant. Please read the [Resume] and [Job Description], and respond ONLY in JSON format following this schema:
+
+{{
+  "match_score": integer 0-100,
+  "confidence": float 0-1,
+  "match_explanation": "Write a natural language explanation of no more than 3 paragraphs based on the resume and job description comparison results, to be used for UI display of match summary. Use simple, clear, and human-like tone",
+  "priorities": [{{"name":string,"weight":0-1,"explanation":string}}],
+  "matched": [{{"item":string,"evidence":[string...]}}],
+  "missing": [{{"item":string,"action":string}}],
+  "advice": {{
+    "{resume_optimization}": ["Specific resume improvement suggestions"],
+    "{cover_letter}": ["Copy-paste paragraph templates"],
+    "{skill_gap}": ["Missing skills and learning directions"],
+    "{interview}": ["Potential questions and answer directions"],
+    "{portfolio}": ["Specific project topics and presentation suggestions"]
+  }}
+}}
+
+Important Rules:
+- All response text must be completely in English, no mixing of other languages, no formal language (use "you")
+- match_explanation: Write a natural language explanation of no more than 3 paragraphs based on the resume and job description comparison results, to be used for UI display of match summary. Use simple, clear, and human-like tone
+- priorities: Must only select important key skills from the job description content, cannot include skills not mentioned in the job description! Each skill must include explanation of why the score is given.
+- matched: Title should be key skills, first letter capitalized; if content has multiple points, use bullet points to describe where there's a match, proper formatting, don't write "therefore giving such weight"
+- missing: Don't write "Suggested action: supplement relevant experience in resume" for each one, text should be logical with beginning and end; title should be logical experience/skills mentioned in resume, should be understandable
+         - advice: Must include the following five categories, each providing specific actionable suggestions:
+           * Resume Optimization: Key missing skill suggestions, specific sentences to add, skill section ordering suggestions, achievement quantification suggestions
+           * Cover Letter Suggestions: Opening sentence templates, middle section connecting past experience, closing sentence templates (use English, natural expression, no formal language, can use "you")
+           * Skill Gap Analysis: Missing skills, learning directions, free resources/course suggestions
+           * Interview Preparation: Potential questions, answer directions, STAR answer framework tips
+           * Portfolio Suggestions: Small project topics, presentation suggestions
+- Only return JSON, no other text
+
+Special Notes:
+1. Skills in priorities must be explicitly mentioned or required in the job description, cannot include skills just because there's related experience in the resume!
+2. Experience years evaluation rules:
+   - Only consider this rule when the job posting mentions specific years requirement
+   - Job requires X years experience, resume has Y years experience:
+     * Y >= X: Give 90-100% (sufficient or exceeding requirements)
+     * Y >= X*0.8: Give 70-85% (close to requirements)
+     * Y >= X*0.6: Give 50-70% (insufficient but acceptable)
+     * Y < X*0.6: Give 30-50% (severely insufficient)
+   - Must clearly explain in explanation how years gap affects the score
+3. Skill matching evaluation rules:
+   - Resume explicitly mentions related experience: Give 70-90%
+   - Resume has related but less description: Give 50-70%
+   - Resume doesn't explicitly mention: Give 20-40%
+   - Don't be overly conservative, if resume has related experience should give reasonable high score
+
+Consistency Requirements:
+- Same resume and job description must produce same score and evaluation results
+- Use structured evaluation standards, avoid subjective judgment
+- Prioritize objective indicators (years, skill matching) over subjective feelings
+- Strictly follow language consistency: All responses must be completely in English, cannot appear any other language""".format(
         resume_optimization=advice_titles["resume_optimization"],
         cover_letter=advice_titles["cover_letter"],
         skill_gap=advice_titles["skill_gap"],
@@ -417,7 +477,9 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
         portfolio=advice_titles["portfolio"]
     )
 
-    user_prompt = f"""
+    # 根據語言定義用戶提示詞
+    if output_language == "中文":
+        user_prompt = f"""
 履歷內容：
 {resume_text}
 
@@ -425,6 +487,16 @@ def analyze_resume_job_match(resume_text, job_description, ui_language="中文")
 {job_description}
 
 請分析匹配度並提供建議。
+"""
+    else:
+        user_prompt = f"""
+Resume Content:
+{resume_text}
+
+Job Description:
+{job_description}
+
+Please analyze the match and provide recommendations.
 """
 
     try:
@@ -754,8 +826,8 @@ def main():
             result = analyze_resume_job_match(resume_text, job_description, language)
         
         if result:
-            # 使用用戶選擇的語言來顯示結果和 UI
-            display_language = result.get('output_language', language)
+            # 確保使用用戶選擇的語言來顯示結果和 UI
+            display_language = language  # 直接使用用戶選擇的語言
             display_texts = get_ui_texts(display_language)
             st.success(display_texts['analysis_complete'])
             display_results(result, display_language)
